@@ -1,8 +1,7 @@
 ,Rank,Author,Title,Citations,Year,Publisher,Venue,Source,cit/year
-1,38,"Kostas, S Aroc",BENDR: using transformers and a contrastive self-supervised learning task to learn from massive amounts of EEG data,56,2021, frontiersin.org, Frontiers in Human …,https://www.frontiersin.org/articles/10.3389/fnhum.2021.653659/full,19
-2,32,"Song, X Jia, L Yang, L Xie",Transformer-based spatial-temporal feature learning for EEG decoding,35,2021, arxiv.org, arXiv preprint arXiv:2106.11170,https://arxiv.org/abs/2106.11170,12
-3,2,"Wang, Y Wang, C Hu, Z Yin, Y Song",Transformers for EEG-based emotion recognition: A hierarchical spatial information learning model,19,2022, ieeexplore.ieee.org, IEEE Sensors Journal,https://ieeexplore.ieee.org/abstract/document/9684393/,10
-4,1,"Liu, L Zhang, H Wu, H Zhao",Transformers for EEG emotion recognition,20,2021, arxiv.org, arXiv preprint arXiv:2110.06553,https://arxiv.org/abs/2110.06553,7
-5,67,Lun,A proposal for multimodal emotion recognition using aural transformers and action units on RAVDESS dataset,13,2021, mdpi.com, Applied Sciences,https://www.mdpi.com/2076-3417/12/1/327,4
-6,27,"Tao, T Sun, A Muhamed, S Genc…",Gated transformer for decoding human brain EEG signals,11,2021, ieeexplore.ieee.org, 2021 43rd Annual …,https://ieeexplore.ieee.org/abstract/document/9630210/,4
-7,90,"Siriwardhana, A Reis, R Weerasekera…","Jointly fine-tuning"" bert-like"" self supervised models to improve multimodal speech emotion recognition",76,2020, arxiv.org, arXiv preprint arXiv …,https://arxiv.org/abs/2008.06682,19
+1,2,"Wang, Y Wang, C Hu, Z Yin, Y Song",Transformers for EEG-based emotion recognition: A hierarchical spatial information learning model,19,2022, ieeexplore.ieee.org, IEEE Sensors Journal,https://ieeexplore.ieee.org/abstract/document/9684393/,10
+2,1,"Liu, L Zhang, H Wu, H Zhao",Transformers for EEG emotion recognition,20,2021, arxiv.org, arXiv preprint arXiv:2110.06553,https://arxiv.org/abs/2110.06553,7
+3,5,"Li, Z Zhang, X Zhang, G Huang…",EEG-based emotion recognition via transformer neural architecture search,5,2022, ieeexplore.ieee.org, IEEE Transactions on …,https://ieeexplore.ieee.org/abstract/document/9763316/,2
+4,9,"Arjun, AS Rajpoot…",Introducing attention mechanism for EEG signals: Emotion recognition with vision transformers,7,2021, ieeexplore.ieee.org, 2021 43rd Annual …,https://ieeexplore.ieee.org/abstract/document/9629837/,2
+5,3," Guo, Q Cai, JP An, PY Chen, C Ma, JH Wan…",A Transformer based neural network for emotion recognition and visualizations of crucial EEG channels,3,2022, Elsevier, Physica A: Statistical …,https://www.sciencedirect.com/science/article/pii/S0378437122004642,2
+6,24,Vazque,Emotion Recognition with Pre-Trained Transformers Using Multimodal Signals,0,2022, ieeexplore.ieee.org, 2022 10th …,https://ieeexplore.ieee.org/abstract/document/9953852/,0

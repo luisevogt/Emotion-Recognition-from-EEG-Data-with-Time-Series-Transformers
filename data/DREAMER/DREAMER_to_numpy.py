@@ -6,7 +6,7 @@ import os
 
 def main():
     """
-    small script to convert DREAMER dataset to numpy array and pandas dataframe
+    small script to convert DREAMER dataset to numpy array.
     """
     file_dir = os.path.dirname(__file__)
     dreamer_path = os.path.join(file_dir, 'DREAMER.mat')

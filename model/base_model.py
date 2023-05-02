@@ -93,7 +93,7 @@ class BaseModel(nn.Module):
 
         sum_correct = (y_pred_labels == y_test).sum().float()
         acc = sum_correct / y_test.shape[0]
-        acc = torch.round(acc * 100)
+        # acc = torch.round(acc * 100)
 
         return acc
 
@@ -107,11 +107,12 @@ class BaseModel(nn.Module):
         for e in tqdm(range(epochs)):
 
             # track loss and accuracy
-            epoch_loss = 0
-            epoch_acc = 0
+            losses = []
+            accuracies = []
 
             # run for each batch in training set
             for X, y in train:
+
                 X = X.to(self._device)
                 y = y.to(self._device)
 
@@ -122,19 +123,19 @@ class BaseModel(nn.Module):
                 # and the expected output
                 _y = self(X)
 
-                loss = self._loss_fn(_y, y.unsqueeze(1))
-                accuracy = self.__binary_acc(_y, y.unsqueeze(1))
+                loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
+                accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # run backpropagation
                 loss.backward()
                 self._optim.step()
 
-                epoch_loss += loss.detach().cpu().item()
-                epoch_acc += accuracy.detach().cpu().item()
+                losses.append(loss.detach().cpu().item())
+                accuracies.append(accuracy.detach().cpu().item())
 
                 # log in tensorboard
-                log_loss = epoch_loss / len(train)
-                log_acc = epoch_acc / len(train)
+                log_loss = np.mean(losses, axis=0)
+                log_acc = np.mean(accuracies, axis=0)
 
                 self._writer.add_scalar("Train/loss", log_loss, self.__sample_position)
                 self._writer.add_scalar("Train/accuracy", log_acc, self.__sample_position)
@@ -161,6 +162,9 @@ class BaseModel(nn.Module):
 
             if save_every > 0 and e % save_every == 0:
                 BaseModel.save_to_default(self)
+
+            epoch_loss = np.mean(losses, axis=0)
+            epoch_acc = np.mean(accuracies, axis=0)
 
             print(f'Epoch {(e + 1) + 0:03}: | Loss: {epoch_loss / len(train):.5f} | Acc: {epoch_acc / len(train):.3f}')
 
@@ -196,7 +200,7 @@ class BaseModel(nn.Module):
 
         # calculate mean accuracy and loss
         accuracy = np.mean(np.array(accuracies))
-        loss = np.mean(np.var(np.array(accuracies)))
+        loss = np.mean(np.array(losses))
 
         # log to the tensorboard if wanted
         if log_step != -1:
@@ -215,13 +219,12 @@ class BaseModel(nn.Module):
 
         # input to confusion matrix and classification report
         y_pred_list = []
-        # test porposes
-        dataloader, y_test = dataloader
+
         # predict all y's of the test set and log metrics
         with torch.no_grad():
-            for X in dataloader:
+            for X, y in dataloader:
                 X = X.to(self._device)
-                # y = y.to(self._device)
+                y = y.to(self._device)
 
                 _y = self(X)
 
@@ -234,7 +237,7 @@ class BaseModel(nn.Module):
 
         y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
 
-        report = classification_report(y_test, y_pred_list,
+        report = classification_report(y, y_pred_list,
                                        target_names=list(self.__class_names.values()), output_dict=True)
 
         precision_0 = report[self.__class_names[0]]['precision']
@@ -249,7 +252,7 @@ class BaseModel(nn.Module):
         test_accuracy = report['accuracy']
 
         # get confusion matrix and log to tensorboard if wanted
-        cm = confusion_matrix(y_test, y_pred_list)
+        cm = confusion_matrix(y, y_pred_list)
         df_cm = pd.DataFrame(cm / np.sum(cm, axis=1)[:, None],
                              index=[value for value in self.__class_names.values()],
                              columns=[value for value in self.__class_names.values()])

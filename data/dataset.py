@@ -1,6 +1,8 @@
 import os
 import pickle
+from pathlib import Path
 
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 
@@ -53,14 +55,11 @@ class DEAPDataset(Dataset):
         self.sample_size = sample_size * self.__sample_freq
         self._trail_num = 40  # 40 videos per participant
         self._sample_num = 60 * self.__sample_freq // self.sample_size
+        self._sample_per_part = self._trail_num * self._sample_num
 
         # save filenames in a list for fast access
         self.filenames = [filename for filename in os.listdir(self.data_dir)
                           if os.path.isfile(os.path.join(self.data_dir, filename))]
-
-        # keep track of the current participant and current trail
-        self.current_participant = 0
-        self.current_trail = 0
 
         # threshold
         self.__threshold = 4.5
@@ -76,34 +75,34 @@ class DEAPDataset(Dataset):
             idx = idx.tolist()
 
         # decompress index
-        sample_per_part = self._trail_num * self._sample_num
-        while idx - self.current_participant * sample_per_part > sample_per_part:
-            self.current_participant += 1
-            self.current_trail = 0
+        current_participant = 0
+        current_trail = 0
+        while idx - current_participant * self._sample_per_part > self._sample_per_part:
+            current_participant += 1
 
-        sample_idx = idx - self.current_participant * sample_per_part - self.current_trail * self._sample_num
+        sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
         while sample_idx > self._sample_num:
-            self.current_trail += 1
-            if self.current_trail >= self._trail_num:
-                self.current_trail = 0
-            sample_idx = idx - self.current_participant * sample_per_part - self.current_trail * self._sample_num
+            current_trail += 1
+            if current_trail >= self._trail_num:
+                current_trail = 0
+            sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
 
         # load dataset
-        filepath = os.path.join(self.data_dir, self.filenames[self.current_participant])
+        filepath = os.path.join(self.data_dir, self.filenames[current_participant])
         file = pickle.load(open(filepath, 'rb'), encoding='latin1')
         data = file["data"]
+        # drop the first three baseline seconds removed
+        data = data[:, :, 384:]
         labels = file["labels"]
 
         # get sample
-        data_sample = data[self.current_trail, 0:32, sample_idx:sample_idx + self.sample_size]
-        label = labels[self.current_trail][self.__tag_to_idx[self._classification_tag]]
+        data_sample = data[current_trail, 0:32, sample_idx:sample_idx + self.sample_size]
+        data_sample = np.float32(data_sample)
+        label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
 
         if label < self.__threshold:
-            label = [0]
+            label = 0
         elif label > self.__threshold:
-            label = [1]
-
-        sample = {'datasets': data_sample, 'labels': label}
-
-        return sample
+            label = 1
+        return np.swapaxes(data_sample, 0, 1), label
 

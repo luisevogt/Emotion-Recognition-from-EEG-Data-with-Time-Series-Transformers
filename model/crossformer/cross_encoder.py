@@ -60,9 +60,11 @@ class scale_block(nn.Module):
     We set depth = 1 in the paper
     '''
 
-    def __init__(self, win_size, d_model, n_heads, d_ff, depth, dropout,
+    def __init__(self, win_size, d_model, n_heads, channel_grouping, d_ff, depth, dropout,
                  seg_num=10, factor=10):
         super(scale_block, self).__init__()
+
+        self.channel_grouping = channel_grouping
 
         if win_size > 1:
             self.merge_layer = SegMerging(d_model, win_size, nn.LayerNorm)
@@ -72,7 +74,7 @@ class scale_block(nn.Module):
         self.encode_layers = nn.ModuleList()
 
         for i in range(depth):
-            self.encode_layers.append(TwoStageAttentionLayer(seg_num, factor, d_model, n_heads,
+            self.encode_layers.append(TwoStageAttentionLayer(seg_num, factor, d_model, n_heads, self.channel_grouping,
                                                              d_ff, dropout))
 
     def forward(self, x):
@@ -92,16 +94,19 @@ class Encoder(nn.Module):
     The Encoder of Crossformer.
     '''
 
-    def __init__(self, e_blocks, win_size, d_model, n_heads, d_ff, block_depth, dropout,
+    def __init__(self, e_blocks, win_size, d_model, n_heads, channel_grouping, d_ff, block_depth, dropout,
                  in_seg_num=10, factor=10):
         super(Encoder, self).__init__()
+
+        self.channel_grouping = channel_grouping
+
         self.encode_blocks = nn.ModuleList()
 
-        self.encode_blocks.append(scale_block(1, d_model, n_heads, d_ff, block_depth, dropout,
+        self.encode_blocks.append(scale_block(1, d_model, n_heads, self.channel_grouping, d_ff, block_depth, dropout,
                                               in_seg_num, factor))
         for i in range(1, e_blocks):
-            self.encode_blocks.append(scale_block(win_size, d_model, n_heads, d_ff, block_depth, dropout,
-                                                  ceil(in_seg_num / win_size ** i), factor))
+            self.encode_blocks.append(scale_block(win_size, d_model, n_heads, self.channel_grouping, d_ff, block_depth,
+                                                  dropout, ceil(in_seg_num / win_size ** i), factor))
 
     def forward(self, x):
 

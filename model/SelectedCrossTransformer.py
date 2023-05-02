@@ -25,9 +25,17 @@ def get_cls_pos_encoding(seq_length, d):
 
 
 class SelectedCrossTransformer(BaseModel):
-    def __init__(self, data_dim, in_length, classification_tag, seg_length=10, win_size=2, factor=10,
+    def __init__(self, data_dim, in_length, classification_tag, channel_grouping=None, seg_length=10, win_size=2,
+                 factor=10,
                  hidden_dim=512, ff_dim=1024, num_heads=4, e_layers=3, lr=1e-3, lr_decay=0.5, momentum=0.9,
                  weight_decay=1e-2, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
+
+        if channel_grouping:
+            self.channel_grouping = channel_grouping
+        else:
+            # TODO change it to default grouping
+            self.channel_grouping = {group: [channel_idx, channel_idx + 1]
+                                     for group, channel_idx in zip(range(data_dim // 2), range(0, data_dim, 2))}
 
         # if logging enabled, then create a tensorboard writer, otherwise prevent the
         # parent class to create a summary writer
@@ -65,7 +73,8 @@ class SelectedCrossTransformer(BaseModel):
         self.pre_norm = nn.LayerNorm(hidden_dim)
 
         # Encoder
-        self.encoder = Encoder(e_layers, win_size, hidden_dim, num_heads, ff_dim, block_depth=1,
+        self.encoder = Encoder(e_blocks=e_layers, win_size=win_size, d_model=hidden_dim, n_heads=num_heads,
+                               channel_grouping=self.channel_grouping, d_ff=ff_dim, block_depth=1,
                                dropout=dropout, in_seg_num=(self.pad_in_len // seg_length) + 1, factor=factor)
 
         # Classification Layer

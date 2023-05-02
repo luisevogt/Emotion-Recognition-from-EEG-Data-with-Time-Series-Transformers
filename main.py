@@ -50,7 +50,7 @@ if __name__ == '__main__':
     train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset=test_data, batch_size=1)
 
-    model = SelectedCrossTransformer(data_dim=32, in_length=1280, classification_tag=classification_tag)
+    model = SelectedCrossTransformer(data_dim=32, in_length=1280, classification_tag=classification_tag, log=False)
 
     model.learn(train=train_loader, test=test_loader, epochs=epochs)
 

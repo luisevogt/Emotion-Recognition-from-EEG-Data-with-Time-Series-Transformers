@@ -75,9 +75,12 @@ class TwoStageAttentionLayer(nn.Module):
     input/output shape: [batch_size, Data_dim(D), Seg_num(L), d_model]
     '''
 
-    def __init__(self, seg_num, factor, d_model, n_heads, d_ff=None, dropout=0.1):
+    def __init__(self, seg_num, factor, d_model, n_heads, channel_grouping, d_ff=None, dropout=0.1):
         super(TwoStageAttentionLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
+
+        self.channel_grouping = channel_grouping
+
         self.time_attention = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_sender = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_receiver = AttentionLayer(d_model, n_heads, dropout=dropout)
@@ -98,28 +101,47 @@ class TwoStageAttentionLayer(nn.Module):
                                   nn.Linear(d_ff, d_model))
 
     def forward(self, x):
-        # Cross Time Stage: Directly apply MSA to each dimension
-        batch = x.shape[0]
-        time_in = rearrange(x, 'b ts_d seg_num d_model -> (b ts_d) seg_num d_model')
-        time_enc = self.time_attention(
-            time_in, time_in, time_in
-        )
-        dim_in = time_in + self.dropout(time_enc)
-        dim_in = self.norm1(dim_in)
-        dim_in = dim_in + self.dropout(self.MLP1(dim_in))
-        dim_in = self.norm2(dim_in)
+        print('original size:', x.shape)
+        final_out = None
+        for group_idx, channels in self.channel_grouping.items():
+            # get sub-tensor with corresponding channels
+            start_channel, end_channel = channels[0], channels[-1]
+            x_sub = x[:, start_channel:end_channel + 1, :, :]
+            # print('subtensor size: ', x_sub.shape)
 
-        # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build
-        # the D-to-D connection
-        dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
-        batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model', repeat=batch)
-        dim_buffer = self.dim_sender(batch_router, dim_send, dim_send)
-        dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
-        dim_enc = dim_send + self.dropout(dim_receive)
-        dim_enc = self.norm3(dim_enc)
-        dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
-        dim_enc = self.norm4(dim_enc)
+            # Cross Time Stage: Directly apply MSA to each dimension
+            batch = x_sub.shape[0]
+            time_in = rearrange(x_sub, 'b ts_d seg_num d_model -> (b ts_d) seg_num d_model')
+            time_enc = self.time_attention(
+                time_in, time_in, time_in
+            )
+            dim_in = time_in + self.dropout(time_enc)
+            dim_in = self.norm1(dim_in)
+            dim_in = dim_in + self.dropout(self.MLP1(dim_in))
+            dim_in = self.norm2(dim_in)
 
-        final_out = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
+            # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build
+            # the D-to-D connection
+            dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
+            batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model', repeat=batch)
+            dim_buffer = self.dim_sender(batch_router, dim_send, dim_send)
+            dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
+            dim_enc = dim_send + self.dropout(dim_receive)
+            dim_enc = self.norm3(dim_enc)
+            dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
+            dim_enc = self.norm4(dim_enc)
+
+            dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
+            # print('output after rearrange: ', dim_enc.shape)
+            if group_idx == 0:
+                final_out = dim_enc
+            else:
+                batch_size = x.shape[0]
+                final_out = torch.stack([torch.vstack((final_out[batch_idx], dim_enc[batch_idx]))
+                                         for batch_idx in range(batch_size)])
+
+        print('final output shape: ', final_out.shape)
+
+        raise ValueError("TEST")
 
         return final_out

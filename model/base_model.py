@@ -98,7 +98,7 @@ class BaseModel(nn.Module):
         return acc
 
     def learn(self, train, validate=None, test=None, epochs: int = 1, save_every: int = -1):
-        print(f"Training model on: {self._device}")
+        print("Training model on: ", self._device if self._device == 'cpu' else self._device_name)
 
         # set the model into training mode
         self.train()

@@ -25,7 +25,6 @@ def get_data(split: list, data_dir, data_tag, classification_tag, sample_size=10
     :return:
     """
     # TODO k-fold ?
-
     assert classification_tag.lower() in ['a', 'v', 'd'], "Please provide a valid classification tag. " \
                                                           "Valid tags are: a, v, d for arousal, valence and " \
                                                           "dominance. "
@@ -60,7 +59,7 @@ if __name__ == '__main__':
     # TODO distinguish between load and train
 
     # prepare data
-    print("Load data.")
+    print("Load data...")
     classification_tag = config_dict['classification_tag']
 
     dataset_args = config_dict['dataset_args']
@@ -79,13 +78,13 @@ if __name__ == '__main__':
     model_name = config_dict['model_name']
     model_args = config_dict['model_args']
 
-    if not model_args['channel_grouping']:
+    if model_args['channel_grouping'] == 'None':
         if dataset_args['data_tag'] == 'deap':
-            channel_grouping = DEAPDataset.get_channel_grouping()
+            _, channel_grouping = DEAPDataset.get_channel_grouping()
             model_args['channel_grouping'] = channel_grouping
 
     sample_size = config_dict['dataset_args']['sample_size']
-    sample_freq = DEAPDataset.__sample_freq
+    sample_freq = DEAPDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 
@@ -94,7 +93,7 @@ if __name__ == '__main__':
 
     seed = config_dict['seed']
 
-    if seed:
+    if seed != 'None':
         if device == 'cpu':
             torch.manual_seed(seed)
         elif device == 'cuda':

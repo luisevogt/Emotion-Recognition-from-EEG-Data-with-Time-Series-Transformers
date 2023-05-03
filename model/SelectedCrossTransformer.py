@@ -42,6 +42,7 @@ class SelectedCrossTransformer(BaseModel):
             self.__tb_sub = now.strftime("%H%M%S")
             self._tb_path = f"runs/{tag}/{self.__tb_sub}"
             self._writer = SummaryWriter(self._tb_path)
+            print('Summary writer activated.')
         else:
             self._writer = False
 

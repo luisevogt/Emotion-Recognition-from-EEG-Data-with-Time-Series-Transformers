@@ -101,13 +101,11 @@ class TwoStageAttentionLayer(nn.Module):
                                   nn.Linear(d_ff, d_model))
 
     def forward(self, x):
-        print('original size:', x.shape)
         final_out = None
         for group_idx, channels in self.channel_grouping.items():
             # get sub-tensor with corresponding channels
             start_channel, end_channel = channels[0], channels[-1]
             x_sub = x[:, start_channel:end_channel + 1, :, :]
-            # print('subtensor size: ', x_sub.shape)
 
             # Cross Time Stage: Directly apply MSA to each dimension
             batch = x_sub.shape[0]
@@ -132,7 +130,7 @@ class TwoStageAttentionLayer(nn.Module):
             dim_enc = self.norm4(dim_enc)
 
             dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
-            # print('output after rearrange: ', dim_enc.shape)
+
             if group_idx == 0:
                 final_out = dim_enc
             else:
@@ -141,7 +139,5 @@ class TwoStageAttentionLayer(nn.Module):
                                          for batch_idx in range(batch_size)])
 
         print('final output shape: ', final_out.shape)
-
-        raise ValueError("TEST")
 
         return final_out

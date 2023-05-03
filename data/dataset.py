@@ -12,7 +12,7 @@ class DEAPDataset(Dataset):
     DEAP dataset.
     """
 
-    __sample_freq = 128
+    sample_freq = 128
 
     def __init__(self, data_dir, classification_tag, sample_size=10):
         """
@@ -52,7 +52,7 @@ class DEAPDataset(Dataset):
         assert 60 % sample_size == 0, "The sample size should be a factor of 60."
 
         self.data_dir = data_dir
-
+        self.__sample_freq = DEAPDataset.sample_freq
         self.sample_size = sample_size * self.__sample_freq
         self._trail_num = 40  # 40 videos per participant
         self._sample_num = 60 * self.__sample_freq // self.sample_size

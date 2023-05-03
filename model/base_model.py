@@ -193,9 +193,10 @@ class BaseModel(nn.Module):
 
                 _y = self(X)
 
-                loss = self._loss_fn(_y, y)
+                loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
+                accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
                 losses.append(loss.detach().cpu().item())
-                accuracies.append(self.__binary_acc(_y, y))
+                accuracies.append(accuracy.detach().cpu().item())
 
         # calculate mean accuracy and loss
         accuracy = np.mean(np.array(accuracies))

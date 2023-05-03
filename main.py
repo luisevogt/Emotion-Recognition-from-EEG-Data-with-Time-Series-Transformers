@@ -67,9 +67,10 @@ if __name__ == '__main__':
 
     dataloader_args = config_dict['dataloader_args']
 
-    train_data, test_data = get_data(**dataset_args)
+    train_data, vali_data, test_data = get_data(**dataset_args)
 
     train_loader = DataLoader(dataset=train_data, **dataloader_args, pin_memory=True)
+    vali_loader = DataLoader(dataset=vali_data, pin_memory=True)
     test_loader = DataLoader(dataset=test_data, pin_memory=True)
 
     # get model
@@ -101,7 +102,7 @@ if __name__ == '__main__':
 
     print(f'Start training of model {model_name}.')
 
-    model.learn(train=train_loader, test=test_loader, epochs=config_dict['train_epochs'],
+    model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])
 
     config_dict['evaluation'] = model.log_path

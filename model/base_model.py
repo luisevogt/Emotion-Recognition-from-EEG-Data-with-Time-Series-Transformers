@@ -93,7 +93,6 @@ class BaseModel(nn.Module):
 
         sum_correct = (y_pred_labels == y_test).sum().float()
         acc = sum_correct / y_test.shape[0]
-        # acc = torch.round(acc * 100)
 
         return acc
 
@@ -219,6 +218,7 @@ class BaseModel(nn.Module):
 
         # input to confusion matrix and classification report
         y_pred_list = []
+        y_labels = []
 
         # predict all y's of the test set and log metrics
         with torch.no_grad():
@@ -233,11 +233,14 @@ class BaseModel(nn.Module):
                 _y_label = torch.round(_y)
                 y_pred_list.append(_y_label.detach().cpu().numpy())
 
+                y_labels.append(y)
+
         # log metrics to tensorboard if wanted
 
         y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
-
-        report = classification_report(y, y_pred_list,
+        y_labels = [label.squeeze().tolist() for label in y_labels]
+        print(len(y_labels), len(y_pred_list))
+        report = classification_report(y_labels, y_pred_list,
                                        target_names=list(self.__class_names.values()), output_dict=True)
 
         precision_0 = report[self.__class_names[0]]['precision']

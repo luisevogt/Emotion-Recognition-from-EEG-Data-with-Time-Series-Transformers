@@ -138,6 +138,4 @@ class TwoStageAttentionLayer(nn.Module):
                 final_out = torch.stack([torch.vstack((final_out[batch_idx], dim_enc[batch_idx]))
                                          for batch_idx in range(batch_size)])
 
-        print('final output shape: ', final_out.shape)
-
         return final_out

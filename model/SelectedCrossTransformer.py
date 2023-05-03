@@ -30,12 +30,10 @@ class SelectedCrossTransformer(BaseModel):
                  hidden_dim=512, ff_dim=1024, num_heads=4, e_layers=3, lr=1e-3, lr_decay=0.5, momentum=0.9,
                  weight_decay=1e-2, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
 
-        if channel_grouping:
-            self.channel_grouping = channel_grouping
+        if not channel_grouping:
+            self.channel_grouping = {0: [channel_idx for channel_idx in range(data_dim)]}
         else:
-            # TODO change it to default grouping
-            self.channel_grouping = {group: [channel_idx, channel_idx + 1]
-                                     for group, channel_idx in zip(range(data_dim // 2), range(0, data_dim, 2))}
+            self.channel_grouping = channel_grouping
 
         # if logging enabled, then create a tensorboard writer, otherwise prevent the
         # parent class to create a summary writer

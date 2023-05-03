@@ -1,10 +1,16 @@
 import torch
+import argparse
 
 from pathlib import Path
 from data.dataset import DEAPDataset
 from torch.utils.data import random_split, DataLoader
 
 from model.SelectedCrossTransformer import SelectedCrossTransformer
+from model.base_model import BaseModel
+from config.config import Config
+
+config = Config()
+config_dict = None
 
 
 def get_data(split: list, data_dir, data_tag, classification_tag, sample_size=10):
@@ -37,20 +43,70 @@ def get_data(split: list, data_dir, data_tag, classification_tag, sample_size=10
 
 
 if __name__ == '__main__':
-    data_dir = Path('datasets/DEAP/data_preprocessed_python')
-    data_tag = 'deap'
-    classification_tag = 'a'
+    available_models = {'SelectedCrossTransformer': SelectedCrossTransformer}
 
-    batch_size = 32
-    epochs = 1
+    # parse arguments
+    parser = argparse.ArgumentParser(description="Thesis")
+    parser.add_argument("--config", dest="config", help="A .yaml file (path) that contains "
+                                                        "hyperparameters and configurations for a training / testing")
 
-    train_data, test_data = get_data([0.7, 0.3], data_dir=data_dir, data_tag=data_tag,
-                                     classification_tag=classification_tag)
+    args = parser.parse_args()
 
-    train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(dataset=test_data, batch_size=1)
+    # get config dict
+    config_path = args.config
+    if config_path:
+        config_dict = config.get_args(config_path)
 
-    model = SelectedCrossTransformer(data_dim=32, in_length=1280, classification_tag=classification_tag, log=False)
+    # TODO distinguish between load and train
 
-    model.learn(train=train_loader, test=test_loader, epochs=epochs)
+    # prepare data
+    print("Load data.")
+    classification_tag = config_dict['classification_tag']
 
+    dataset_args = config_dict['dataset_args']
+    dataset_args['classification_tag'] = classification_tag
+
+    dataloader_args = config_dict['dataloader_args']
+
+    train_data, test_data = get_data(**dataset_args)
+
+    train_loader = DataLoader(dataset=train_data, **dataloader_args, pin_memory=True)
+    test_loader = DataLoader(dataset=test_data, pin_memory=True)
+
+    # get model
+    device = config_dict['device']
+
+    model_name = config_dict['model_name']
+    model_args = config_dict['model_args']
+
+    if not model_args['channel_grouping']:
+        if dataset_args['data_tag'] == 'deap':
+            channel_grouping = DEAPDataset.get_channel_grouping()
+            model_args['channel_grouping'] = channel_grouping
+
+    sample_size = config_dict['dataset_args']['sample_size']
+    sample_freq = DEAPDataset.__sample_freq
+    model_args['in_length'] = sample_size * sample_freq
+    model_args['classification_tag'] = classification_tag
+
+    model = available_models[model_name](**model_args)
+    model.use_device(device)
+
+    seed = config_dict['seed']
+
+    if seed:
+        if device == 'cpu':
+            torch.manual_seed(seed)
+        elif device == 'cuda':
+            torch.cuda.manual_seed_all(seed)
+
+    print(f'Start training of model {model_name}.')
+
+    model.learn(train=train_loader, test=test_loader, epochs=config_dict['train_epochs'],
+                save_every=config_dict['save_every'])
+
+    config_dict['evaluation'] = model.log_path
+    config_dict['model_args']['log'] = False
+    config.store_args(f"{model.log_path}/config.yml", config_dict)
+
+    BaseModel.save_to_default(model)

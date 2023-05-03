@@ -12,6 +12,8 @@ class DEAPDataset(Dataset):
     DEAP dataset.
     """
 
+    __sample_freq = 128
+
     def __init__(self, data_dir, classification_tag, sample_size=10):
         """
         :param data_dir: Directory with the datasets from all participants.
@@ -51,7 +53,6 @@ class DEAPDataset(Dataset):
 
         self.data_dir = data_dir
 
-        self.__sample_freq = 128
         self.sample_size = sample_size * self.__sample_freq
         self._trail_num = 40  # 40 videos per participant
         self._sample_num = 60 * self.__sample_freq // self.sample_size
@@ -63,6 +64,19 @@ class DEAPDataset(Dataset):
 
         # threshold
         self.__threshold = 4.5
+
+    @staticmethod
+    def get_channel_grouping():
+        group_idx_to_name = {0: 'frontal lobe',
+                             1: 'parietal lobe',
+                             2: 'temporal lobe',
+                             3: 'occipital lobe'}
+
+        channel_grouping = {0: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22],
+                            1: [8, 9, 10, 11, 12, 15, 26, 27, 28, 29, 30],
+                            2: [7, 25, 6, 23, 24],
+                            3: [13, 31, 14]}
+        return group_idx_to_name, channel_grouping
 
     def __len__(self):
         participant_count = len(self.filenames)
@@ -105,4 +119,3 @@ class DEAPDataset(Dataset):
         elif label > self.__threshold:
             label = 1
         return np.swapaxes(data_sample, 0, 1), label
-

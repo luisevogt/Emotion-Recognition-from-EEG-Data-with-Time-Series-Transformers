@@ -103,8 +103,8 @@ class BaseModel(nn.Module):
 
         # set the model into training mode
         self.train()
-
-        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+        # TODO patience in config and function init
+        early_stopping = EarlyStopping(patience=3, verbose=True)
 
         # run for n epochs specified
         for e in tqdm(range(epochs)):
@@ -232,6 +232,7 @@ class BaseModel(nn.Module):
         y_labels = []
 
         # predict all y's of the test set and log metrics
+
         with torch.no_grad():
             for X, y in dataloader:
                 X = X.to(self._device)
@@ -248,10 +249,10 @@ class BaseModel(nn.Module):
 
         # log metrics to tensorboard if wanted
 
-        y_pred_list = [pred.tolist() for pred in y_pred_list]
+        y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
         y_labels = [label.tolist() for label in y_labels]
-        print(y_labels[100:110], y_pred_list[100:110])
-        report = classification_report(np.array(y_labels), (np.array(y_pred_list) > 0.5),
+
+        report = classification_report(np.array(y_labels), np.array(y_pred_list),
                                        target_names=list(self.__class_names.values()), output_dict=True)
 
         precision_0 = report[self.__class_names[0]]['precision']
@@ -266,7 +267,7 @@ class BaseModel(nn.Module):
         test_accuracy = report['accuracy']
 
         # get confusion matrix and log to tensorboard if wanted
-        cm = confusion_matrix(y, y_pred_list)
+        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list))
         df_cm = pd.DataFrame(cm / np.sum(cm, axis=1)[:, None],
                              index=[value for value in self.__class_names.values()],
                              columns=[value for value in self.__class_names.values()])

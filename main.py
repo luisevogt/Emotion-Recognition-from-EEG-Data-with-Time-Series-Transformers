@@ -102,11 +102,13 @@ if __name__ == '__main__':
 
     print(f'Start training of model {model_name}.')
 
-    model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
-                save_every=config_dict['save_every'])
+    # model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
+    #            save_every=config_dict['save_every'])
+    model.eval()
+    model.test(test_loader, 0)
 
-    config_dict['evaluation'] = model.log_path
-    config_dict['model_args']['log'] = False
-    config.store_args(f"{model.log_path}/config.yml", config_dict)
+    # config_dict['evaluation'] = model.log_path
+    # config_dict['model_args']['log'] = False
+    # config.store_args(f"{model.log_path}/config.yml", config_dict)
 
-    BaseModel.save_to_default(model)
+    # BaseModel.save_to_default(model)

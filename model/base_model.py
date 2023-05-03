@@ -15,6 +15,8 @@ from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sn
 
+from utils.tools import EarlyStopping
+
 
 def eval_step(engine, batch):
     return batch
@@ -102,6 +104,8 @@ class BaseModel(nn.Module):
         # set the model into training mode
         self.train()
 
+        early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
+
         # run for n epochs specified
         for e in tqdm(range(epochs)):
 
@@ -111,7 +115,6 @@ class BaseModel(nn.Module):
 
             # run for each batch in training set
             for X, y in train:
-
                 X = X.to(self._device)
                 y = y.to(self._device)
 
@@ -151,7 +154,8 @@ class BaseModel(nn.Module):
             if validate:
                 # set the model to eval mode, run validation and set to train mode again
                 self.eval()
-                self.validate(validate, e)
+                vali_loss = self.validate(validate, e)
+                early_stopping(vali_loss)
                 self.train()
 
             if test:
@@ -167,10 +171,14 @@ class BaseModel(nn.Module):
 
             print(f'Epoch {(e + 1) + 0:03}: | Loss: {epoch_loss / len(train):.5f} | Acc: {epoch_acc / len(train):.3f}')
 
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
+
         self.eval()
         self._writer.flush()
 
-    def validate(self, dataloader, log_step: int = -1) -> None:
+    def validate(self, dataloader, log_step: int = -1):
         """Method validates model's accuracy based on the given data. In validation, the model
         only looks one step ahead.
 
@@ -205,6 +213,8 @@ class BaseModel(nn.Module):
         if log_step != -1:
             self._writer.add_scalar("Validation/accuracy", accuracy, log_step)
             self._writer.add_scalar("Validation/loss", loss, log_step)
+
+        return loss
 
     def test(self, dataloader, log_step: int = -1) -> None:
         """Method validates model's accuracy based on test data. During testing, the model
@@ -273,5 +283,3 @@ class BaseModel(nn.Module):
             self._writer.add_scalar(f"Test/f1-score_{self.__class_names[1]}", f1_score_1, log_step)
 
             self._writer.add_figure("Confusion matrix", figure, log_step)
-
-

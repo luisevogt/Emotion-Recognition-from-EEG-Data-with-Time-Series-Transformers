@@ -7,41 +7,15 @@ from torch.utils.data import random_split, DataLoader
 
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from model.base_model import BaseModel
+from data.utils.utils import stratify_data, get_class_distribution, get_class_distribution_loaders
+from plot.plot import plot_bar_chart
 from config.config import Config
 
 config = Config()
 config_dict = None
 
-
-def get_data(split: list, data_dir, data_tag, classification_tag, sample_size=10):
-    """
-    Splits the dataset into non-overlapping parts of given length.
-    :param split: lengths or fractions of splits (as list)
-    :param data_dir: directory of data
-    :param data_tag: a tag that indicates whether DEAP or DREAMER should be used
-    :param classification_tag: A character that indicates which label should be used from data. Valid tags are
-        'a' for arousal, 'v' for valence and 'd' for dominance.
-    :param sample_size: The size of the sample in seconds. Default is 10.
-    :return:
-    """
-    # TODO k-fold ?
-    assert classification_tag.lower() in ['a', 'v', 'd'], "Please provide a valid classification tag. " \
-                                                          "Valid tags are: a, v, d for arousal, valence and " \
-                                                          "dominance. "
-
-    # set generator for random permutation
-    generator = torch.Generator().manual_seed(42)
-
-    # get dataset
-    if data_tag.lower() == 'deap':
-        dataset = DEAPDataset(data_dir, classification_tag, sample_size)
-    else:
-        raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
-
-    return random_split(dataset, split, generator)
-
-
 if __name__ == '__main__':
+
     available_models = {'SelectedCrossTransformer': SelectedCrossTransformer}
 
     # parse arguments
@@ -67,11 +41,11 @@ if __name__ == '__main__':
 
     dataloader_args = config_dict['dataloader_args']
 
-    train_data, vali_data, test_data = get_data(**dataset_args)
+    dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
-    train_loader = DataLoader(dataset=train_data, **dataloader_args, pin_memory=True)
-    vali_loader = DataLoader(dataset=vali_data, pin_memory=True)
-    test_loader = DataLoader(dataset=test_data, pin_memory=True)
+    train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
+    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, pin_memory=True)
+    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, pin_memory=True)
 
     # get model
     device = config_dict['device']
@@ -105,8 +79,11 @@ if __name__ == '__main__':
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])
 
-    # config_dict['evaluation'] = model.log_path
-    # config_dict['model_args']['log'] = False
-    # config.store_args(f"{model.log_path}/config.yml", config_dict)
+    # model.eval()
+    # model.test(dataloader=test_loader)
 
-    # BaseModel.save_to_default(model)
+    config_dict['evaluation'] = model.log_path
+    config_dict['model_args']['log'] = False
+    config.store_args(f"{model.log_path}/config.yml", config_dict)
+
+    BaseModel.save_to_default(model)

@@ -65,17 +65,20 @@ class DEAPDataset(Dataset):
         # threshold
         self.__threshold = 4.5
 
+    def get_class_names(self):
+        return self.__class_names
+
     @staticmethod
     def get_channel_grouping():
-        group_idx_to_name = {0: 'frontal lobe',
-                             1: 'parietal lobe',
-                             2: 'temporal lobe',
-                             3: 'occipital lobe'}
+        group_idx_to_name = {0: 'left frontal region',
+                             1: 'right frontal region',
+                             2: 'left parietal-temporal-occipital',
+                             3: 'right parietal-temporal-occipital'}
 
-        channel_grouping = {0: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22],
-                            1: [8, 9, 10, 11, 12, 15, 26, 27, 28, 29, 30],
-                            2: [7, 25, 6, 23, 24],
-                            3: [13, 31, 14]}
+        channel_grouping = {0: [0, 1, 2, 3, 4, 5, 6, 23],
+                            1: [16, 17, 18, 19, 20, 21, 22, 24],
+                            2: [7, 8, 9, 10, 11, 12, 13, 14],
+                            3: [15, 25, 26, 27, 28, 29, 30, 31]}
         return group_idx_to_name, channel_grouping
 
     def __len__(self):
@@ -114,7 +117,7 @@ class DEAPDataset(Dataset):
         data_sample = np.float32(data_sample)
         label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
 
-        if label < self.__threshold:
+        if label <= self.__threshold:
             label = 0
         elif label > self.__threshold:
             label = 1

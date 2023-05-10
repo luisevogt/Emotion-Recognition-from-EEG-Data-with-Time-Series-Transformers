@@ -1,10 +1,10 @@
 import os
 import pickle
-from pathlib import Path
-
 import numpy as np
 import torch
+
 from torch.utils.data import Dataset
+from sklearn.preprocessing import MinMaxScaler
 
 
 class DEAPDataset(Dataset):
@@ -112,7 +112,7 @@ class DEAPDataset(Dataset):
         data = data[:, :, 384:]
         labels = file["labels"]
 
-        # get sample
+        # get sample and label
         data_sample = data[current_trail, 0:32, sample_idx:sample_idx + self.sample_size]
         data_sample = np.float32(data_sample)
         label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
@@ -121,4 +121,9 @@ class DEAPDataset(Dataset):
             label = 0
         elif label > self.__threshold:
             label = 1
-        return np.swapaxes(data_sample, 0, 1), label
+
+        # normalize sample in every channel with min-max normalization
+        scaler = MinMaxScaler()
+        scaler.fit(data_sample)
+        ds_scaled = scaler.transform(data_sample)
+        return np.swapaxes(ds_scaled, 0, 1), label

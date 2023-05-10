@@ -82,7 +82,9 @@ class SelectedCrossTransformer(BaseModel):
         # set loss function, optimizer and scheduler for learning rate decay
         self._loss_fn = nn.BCEWithLogitsLoss()
         self._optim = optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
-        self._scheduler = torch.optim.lr_scheduler.ExponentialLR(self._optim, gamma=lr_decay)
+        self._scheduler = None
+        if lr_decay:
+            self._scheduler = torch.optim.lr_scheduler.ExponentialLR(self._optim, gamma=lr_decay)
 
     def forward(self, x_seq):
 

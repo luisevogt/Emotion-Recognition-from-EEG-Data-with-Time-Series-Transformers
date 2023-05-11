@@ -166,11 +166,6 @@ class BaseModel(nn.Module):
             if save_every > 0 and e % save_every == 0:
                 BaseModel.save_to_default(self)
 
-            epoch_loss = np.mean(losses, axis=0)
-            epoch_acc = np.mean(accuracies, axis=0)
-
-            print(f'Epoch {(e + 1) + 0:03}: | Loss: {epoch_loss / len(train):.5f} | Acc: {epoch_acc / len(train):.3f}')
-
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
@@ -232,7 +227,6 @@ class BaseModel(nn.Module):
         y_labels = []
 
         # predict all y's of the test set and log metrics
-
         with torch.no_grad():
             for X, y in dataloader:
                 X = X.to(self._device)
@@ -250,10 +244,19 @@ class BaseModel(nn.Module):
         # log metrics to tensorboard if wanted
 
         y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
-        y_labels = [label.tolist() for label in y_labels]
+        y_labels = [label.item() for label in y_labels]
 
-        report = classification_report(np.array(y_labels), np.array(y_pred_list),
-                                       target_names=list(self.__class_names.values()), output_dict=True)
+        unpred_label = set(y_labels) - set(y_pred_list)
+
+        if len(unpred_label) != 0:
+            print(f"{unpred_label} not predicted. Metrics will be 0.")
+
+        y_pred = np.array(y_pred_list)
+        y_labels = np.array(y_labels)
+
+        report = classification_report(y_labels, y_pred,
+                                       target_names=list(self.__class_names.values()),
+                                       output_dict=True)
 
         precision_0 = report[self.__class_names[0]]['precision']
         precision_1 = report[self.__class_names[1]]['precision']

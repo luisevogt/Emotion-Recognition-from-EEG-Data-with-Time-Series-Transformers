@@ -104,7 +104,7 @@ class BaseModel(nn.Module):
         # set the model into training mode
         self.train()
         # TODO patience in config and function init
-        early_stopping = EarlyStopping(patience=3, verbose=True)
+        early_stopping = EarlyStopping(patience=10, verbose=True)
 
         # run for n epochs specified
         for e in tqdm(range(epochs)):
@@ -167,8 +167,8 @@ class BaseModel(nn.Module):
                 BaseModel.save_to_default(self)
 
             if early_stopping.early_stop:
-                print("Early stopping")
-                break
+                print("Should have early stopped here.")
+                # break
 
             print(f'Epoch {e + 1}/{epochs +1} finished. Loss: {log_loss}. Acc: {log_acc}.')
 
@@ -204,8 +204,8 @@ class BaseModel(nn.Module):
                 accuracies.append(accuracy.detach().cpu().item())
 
         # calculate mean accuracy and loss
-        accuracy = np.mean(np.array(accuracies))
-        loss = np.mean(np.array(losses))
+        loss = np.mean(losses, axis=0)
+        accuracy = np.mean(accuracies, axis=0)
 
         # log to the tensorboard if wanted
         if log_step != -1:

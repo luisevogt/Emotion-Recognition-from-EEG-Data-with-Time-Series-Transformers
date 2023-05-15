@@ -58,6 +58,9 @@ if __name__ == '__main__':
             _, channel_grouping = DEAPDataset.get_channel_grouping()
             model_args['channel_grouping'] = channel_grouping
 
+    if model_args['lr_decay'] == 'None':
+        model_args['lr_decay'] = None
+
     sample_size = config_dict['dataset_args']['sample_size']
     sample_freq = DEAPDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq

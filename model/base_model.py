@@ -170,6 +170,8 @@ class BaseModel(nn.Module):
                 print("Early stopping")
                 break
 
+            print(f'Epoch {e + 1}/{epochs +1} finished. Loss: {log_loss}. Acc: {log_acc}.')
+
         self.eval()
         self._writer.flush()
 

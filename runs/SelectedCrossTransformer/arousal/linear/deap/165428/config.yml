@@ -1,0 +1,74 @@
+classification_tag: a
+dataloader_args:
+  batch_size: 16
+  num_workers: 2
+dataset_args:
+  classification_tag: a
+  data_dir: datasets/DEAP/data_preprocessed_python
+  data_tag: deap
+  sample_size: 6
+  split:
+  - 0.8
+  - 0.1
+  - 0.1
+device: cuda
+evaluation: runs/SelectedCrossTransformer/arousal/linear/deap/165428
+model_args:
+  channel_grouping:
+    0:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 23
+    1:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 22
+    - 24
+    2:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    3:
+    - 15
+    - 25
+    - 26
+    - 27
+    - 28
+    - 29
+    - 30
+    - 31
+  classification_tag: a
+  data_dim: 32
+  dropout: 0.1
+  e_layers: 6
+  factor: 10
+  ff_dim: 1024
+  hidden_dim: 512
+  in_length: 768
+  log: false
+  lr: 1.0e-05
+  lr_decay: null
+  momentum: 0.9
+  num_heads: 8
+  seg_length: 10
+  tag: SelectedCrossTransformer/arousal/linear/deap
+  weight_decay: 0.01
+  win_size: 1
+model_name: SelectedCrossTransformer
+save_every: 10
+seed: 42
+train_epochs: 100

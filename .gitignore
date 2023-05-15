@@ -790,6 +790,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# dataset folder
+datasets
+
+# ignore torch models
+*.torch
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 

@@ -1,0 +1,37 @@
+Loaded module: cuda/11.7
+/zhome/40/6/202141/.lsbatch/1684156921.16696330.shell: line 31: /appl/cuda/11.7.0/samples/bin/x86_64/linux/release/deviceQuery: No such file or directory
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /appl/python/3.10.7/include/python3.10/UNKNOWN
+sysconfig: /appl/python/3.10.7/include/python3.10
+WARNING: Additional context:
+user = False
+home = None
+root = None
+prefix = None
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /zhome/40/6/202141/.local/include/python3.10/UNKNOWN
+sysconfig: /zhome/40/6/202141/.local/include/python3.10
+WARNING: Additional context:
+user = True
+home = None
+root = None
+prefix = None
+WARNING: You are using pip version 21.1; however, version 23.1.2 is available.
+You should consider upgrading via the '/appl/python/3.10.7/bin/python3 -m pip install --upgrade pip' command.
+/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:560: UserWarning: This DataLoader will create 2 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/SelectedCrossTransformer.py:66: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.cls_pos_embedding = nn.Parameter(torch.tensor(get_cls_pos_encoding(1, hidden_dim)))
+  0%|          | 0/100 [00:00<?, ?it/s]  0%|          | 0/100 [20:39<?, ?it/s]
+Traceback (most recent call last):
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/main.py", line 79, in <module>
+    model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/base_model.py", line 149, in learn
+    self._scheduler.step()
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 150, in step
+    values = self.get_lr()
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 600, in get_lr
+    return [group['lr'] * self.gamma
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 600, in <listcomp>
+    return [group['lr'] * self.gamma
+TypeError: can't multiply sequence by non-int of type 'float'

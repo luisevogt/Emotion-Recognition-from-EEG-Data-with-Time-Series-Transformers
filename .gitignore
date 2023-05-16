@@ -793,6 +793,9 @@ FodyWeavers.xsd
 # dataset folder
 datasets
 
+# ignore torch models
+*.torch
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 

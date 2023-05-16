@@ -18,7 +18,7 @@ model_args:
     log: True
     data_dim: 32
     channel_grouping: None
-    seg_length: 12
+    seg_length: 96
     win_size: 1
     factor: 10
     hidden_dim: 512

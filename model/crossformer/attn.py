@@ -104,7 +104,7 @@ class TwoStageAttentionLayer(nn.Module):
         final_out = None
         for group_idx, channels in self.channel_grouping.items():
             # get sub-tensor with corresponding channels
-            x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels))
+            x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels).to(x.device))
 
             # Cross Time Stage: Directly apply MSA to each dimension
             batch = x_sub.shape[0]

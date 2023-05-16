@@ -1,14 +1,12 @@
 import torch
 import argparse
 
-from pathlib import Path
 from data.dataset import DEAPDataset
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader
 
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from model.base_model import BaseModel
-from data.utils.utils import stratify_data, get_class_distribution, get_class_distribution_loaders
-from plot.plot import plot_bar_chart
+from data.utils.utils import stratify_data
 from config.config import Config
 
 config = Config()
@@ -34,12 +32,13 @@ if __name__ == '__main__':
 
     # prepare data
     print("Load data...")
-    classification_tag = config_dict['classification_tag']
+    config_copy = config_dict.copy()
+    classification_tag = config_copy['classification_tag']
 
-    dataset_args = config_dict['dataset_args']
+    dataset_args = config_copy['dataset_args']
     dataset_args['classification_tag'] = classification_tag
 
-    dataloader_args = config_dict['dataloader_args']
+    dataloader_args = config_copy['dataloader_args']
 
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
@@ -48,10 +47,10 @@ if __name__ == '__main__':
     test_loader = DataLoader(dataset=dataset, sampler=test_sampler, pin_memory=True)
 
     # get model
-    device = config_dict['device']
+    device = config_copy['device']
 
-    model_name = config_dict['model_name']
-    model_args = config_dict['model_args']
+    model_name = config_copy['model_name']
+    model_args = config_copy['model_args']
 
     if model_args['channel_grouping'] == 'None':
         if dataset_args['data_tag'] == 'deap':
@@ -61,7 +60,7 @@ if __name__ == '__main__':
     if model_args['lr_decay'] == 'None':
         model_args['lr_decay'] = None
 
-    sample_size = config_dict['dataset_args']['sample_size']
+    sample_size = config_copy['dataset_args']['sample_size']
     sample_freq = DEAPDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
@@ -69,7 +68,7 @@ if __name__ == '__main__':
     model = available_models[model_name](**model_args)
     model.use_device(device)
 
-    seed = config_dict['seed']
+    seed = config_copy['seed']
 
     if seed != 'None':
         if device == 'cpu':

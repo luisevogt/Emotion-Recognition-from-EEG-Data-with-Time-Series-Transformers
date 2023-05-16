@@ -63,6 +63,7 @@ class SelectedCrossTransformer(BaseModel):
 
         # Class tokens
         self.class_token = nn.Parameter(torch.rand(1, hidden_dim))
+        self.class_token.requires_grad = True
         self.cls_pos_embedding = nn.Parameter(torch.tensor(get_cls_pos_encoding(1, hidden_dim)))
         self.cls_pos_embedding.requires_grad = False  # do not learn position encoding of cls token
 

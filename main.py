@@ -43,8 +43,8 @@ if __name__ == '__main__':
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
-    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, pin_memory=True)
-    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, pin_memory=True)
+    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
+    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
 
     # get model
     device = config_copy['device']

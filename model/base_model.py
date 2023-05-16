@@ -167,10 +167,10 @@ class BaseModel(nn.Module):
                 BaseModel.save_to_default(self)
 
             if early_stopping.early_stop:
-                print("Should have early stopped here.")
-                # break
+                print("Early stopping")
+                break
 
-            print(f'Epoch {e + 1}/{epochs +1} finished. Loss: {log_loss}. Acc: {log_acc}.')
+            print(f'Epoch {e + 1}/{epochs} finished. Loss: {log_loss}. Acc: {log_acc}.')
 
         self.eval()
         self._writer.flush()

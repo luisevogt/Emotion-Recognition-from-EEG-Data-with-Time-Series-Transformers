@@ -1,5 +1,5 @@
 device: cuda
-seed: 42
+seed: 66
 evaluation: None
 train_epochs: 100
 classification_tag: a
@@ -18,7 +18,7 @@ model_args:
     log: True
     data_dim: 32
     channel_grouping: None
-    seg_length: 10
+    seg_length: 12
     win_size: 1
     factor: 10
     hidden_dim: 512

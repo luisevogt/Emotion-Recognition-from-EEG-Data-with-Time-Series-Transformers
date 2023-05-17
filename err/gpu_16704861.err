@@ -1,0 +1,89 @@
+Loaded module: cuda/11.6
+Loaded dependency [python3/3.10.7]: gcc/11.3.0-binutils-2.38
+Loaded module: python3/3.10.7
+
+Loading python3/3.10.7
+  Loading requirement: gcc/11.3.0-binutils-2.38
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /appl/python/3.10.7/include/python3.10/UNKNOWN
+sysconfig: /appl/python/3.10.7/include/python3.10
+WARNING: Additional context:
+user = False
+home = None
+root = None
+prefix = None
+  WARNING: The scripts pip, pip3 and pip3.10 are installed in '/zhome/40/6/202141/.local/bin' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /zhome/40/6/202141/.local/include/python3.10/UNKNOWN
+sysconfig: /zhome/40/6/202141/.local/include/python3.10
+WARNING: Additional context:
+user = True
+home = None
+root = None
+prefix = None
+WARNING: You are using pip version 21.1; however, version 23.1.2 is available.
+You should consider upgrading via the '/appl/python/3.10.7/bin/python3 -m pip install --upgrade pip' command.
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /appl/python/3.10.7/include/python3.10/UNKNOWN
+sysconfig: /appl/python/3.10.7/include/python3.10
+WARNING: Additional context:
+user = False
+home = None
+root = None
+prefix = None
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /zhome/40/6/202141/.local/include/python3.10/UNKNOWN
+sysconfig: /zhome/40/6/202141/.local/include/python3.10
+WARNING: Additional context:
+user = True
+home = None
+root = None
+prefix = None
+WARNING: You are using pip version 21.1; however, version 23.1.2 is available.
+You should consider upgrading via the '/appl/python/3.10.7/bin/python3 -m pip install --upgrade pip' command.
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /appl/python/3.10.7/include/python3.10/UNKNOWN
+sysconfig: /appl/python/3.10.7/include/python3.10
+WARNING: Additional context:
+user = False
+home = None
+root = None
+prefix = None
+WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+distutils: /zhome/40/6/202141/.local/include/python3.10/UNKNOWN
+sysconfig: /zhome/40/6/202141/.local/include/python3.10
+WARNING: Additional context:
+user = True
+home = None
+root = None
+prefix = None
+WARNING: You are using pip version 21.1; however, version 23.1.2 is available.
+You should consider upgrading via the '/appl/python/3.10.7/bin/python3 -m pip install --upgrade pip' command.
+/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/utils/data/dataloader.py:560: UserWarning: This DataLoader will create 2 worker processes in total. Our suggested max number of worker in current system is 1, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(_create_warning_msg(
+/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/SelectedCrossTransformer.py:67: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.cls_pos_embedding = nn.Parameter(torch.tensor(get_cls_pos_encoding(1, hidden_dim)))
+  0%|          | 0/100 [00:00<?, ?it/s]  0%|          | 0/100 [00:17<?, ?it/s]
+Traceback (most recent call last):
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/main.py", line 81, in <module>
+    model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/base_model.py", line 126, in learn
+    _y = self(X)
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/SelectedCrossTransformer.py", line 108, in forward
+    enc_out = self.encoder(x_seq)
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/crossformer/cross_encoder.py", line 114, in forward
+    x = block(x)
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/crossformer/cross_encoder.py", line 87, in forward
+    x = layer(x)
+  File "/zhome/40/6/202141/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/zhome/40/6/202141/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/model/crossformer/attn.py", line 107, in forward
+    x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels))
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)

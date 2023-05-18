@@ -135,14 +135,18 @@ class BaseModel(nn.Module):
                 losses.append(loss.detach().cpu().item())
                 accuracies.append(accuracy.detach().cpu().item())
 
-                # log in tensorboard
-                log_loss = np.mean(losses, axis=0)
-                log_acc = np.mean(accuracies, axis=0)
-
-                self._writer.add_scalar("Train/loss", log_loss, self.__sample_position)
-                self._writer.add_scalar("Train/accuracy", log_acc, self.__sample_position)
+                # log to tensorboard
+                self._writer.add_scalar("Train/loss", losses[-1], self.__sample_position)
+                self._writer.add_scalar("Train/accuracy", accuracies[-1], self.__sample_position)
 
                 self.__sample_position += X.size(0)
+
+            # log epoch loss and acc in tensorboard
+            e_loss = np.mean(losses, axis=0)
+            e_acc = np.mean(accuracies, axis=0)
+
+            self._writer.add_scalar("Train/mean_loss", e_loss, e + 1)
+            self._writer.add_scalar("Train/mean_accuracy", e_acc, e + 1)
 
             # if there is an adaptive learning rate (scheduler) available
             if self._scheduler:
@@ -154,13 +158,13 @@ class BaseModel(nn.Module):
             if validate:
                 # set the model to eval mode, run validation and set to train mode again
                 self.eval()
-                vali_loss = self.validate(validate, e)
+                vali_loss = self.validate(validate, e + 1)
                 early_stopping(vali_loss)
                 self.train()
 
             if test:
                 self.eval()
-                self.test(test, e)
+                self.test(test, e + 1)
                 self.train()
 
             if save_every > 0 and e % save_every == 0:
@@ -170,7 +174,7 @@ class BaseModel(nn.Module):
                 print("Early stopping")
                 break
 
-            print(f'Epoch {e + 1}/{epochs} finished. Loss: {log_loss}. Acc: {log_acc}.')
+            print(f'Epoch {e + 1}/{epochs} finished. Loss: {e_loss}. Acc: {e_acc}.')
 
         self.eval()
         self._writer.flush()

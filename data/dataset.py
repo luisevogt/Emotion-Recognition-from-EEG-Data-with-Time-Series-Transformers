@@ -109,7 +109,7 @@ class DEAPDataset(Dataset):
         file = pickle.load(open(filepath, 'rb'), encoding='latin1')
         data = file["data"]
         # drop the first three baseline seconds removed
-        data = data[:, :, 384:]
+        data = data[:, :, self.__sample_freq * 3:]
         labels = file["labels"]
 
         # get sample and label

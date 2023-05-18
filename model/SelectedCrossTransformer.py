@@ -28,7 +28,7 @@ class SelectedCrossTransformer(BaseModel):
     def __init__(self, data_dim, in_length, classification_tag, channel_grouping=None, seg_length=10, win_size=2,
                  factor=10,
                  hidden_dim=512, ff_dim=1024, num_heads=4, e_layers=3, lr=1e-3, lr_decay=0.5, momentum=0.9,
-                 weight_decay=1e-2, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
+                 weight_decay=0, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
 
         if not channel_grouping:
             self.channel_grouping = {0: [channel_idx for channel_idx in range(data_dim)]}
@@ -62,8 +62,8 @@ class SelectedCrossTransformer(BaseModel):
         self.in_len_add = self.pad_in_len - self._in_len
 
         # Class tokens
-        self.class_token = nn.Parameter(torch.rand(1, hidden_dim))
-        self.class_token.requires_grad = True
+        self.class_tokens = nn.ParameterList([
+            nn.Parameter(torch.rand(1, hidden_dim)) for _ in range(len(channel_grouping))])
         self.cls_pos_embedding = nn.Parameter(torch.tensor(get_cls_pos_encoding(1, hidden_dim)))
         self.cls_pos_embedding.requires_grad = False  # do not learn position encoding of cls token
 
@@ -93,15 +93,21 @@ class SelectedCrossTransformer(BaseModel):
             x_seq = torch.cat((x_seq[:, :1, :].expand(-1, self.in_len_add, -1), x_seq), dim=1)
 
         # prepare cls tokens
-        cls_token = self.class_token + self.cls_pos_embedding
+        group_tokens = [cls_token + self.cls_pos_embedding for cls_token in self.class_tokens]
 
         # embed segments and add cls token
         x_seq = self.enc_value_embedding(x_seq)
         x_seq += self.enc_pos_embedding
         batch_size, channels = x_seq.shape[0], x_seq.shape[1]
-        x_seq = torch.stack([torch.stack([torch.vstack((cls_token, x_seq[batch_idx, channel]))
+        cls_tokens = [None] * channels
+        for key in self.channel_grouping.keys():
+            for value in self.channel_grouping[key]:
+                cls_tokens[value] = group_tokens[key]
+        print(x_seq.shape)
+        x_seq = torch.stack([torch.stack([torch.vstack((cls_tokens[channel], x_seq[batch_idx, channel]))
                                           for channel in range(channels)])
                              for batch_idx in range(batch_size)])
+        print(x_seq.shape)
         x_seq = self.pre_norm(x_seq)
 
         # get encoder output

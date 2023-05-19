@@ -73,7 +73,7 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
 
         targets = [targets[i] for i in train_idx]
         train_idx, vali_idx = train_test_split(train_idx,
-                                               test_size=(vali_size + test_size) / train_size,
+                                               test_size=test_size / train_size,
                                                shuffle=True,
                                                stratify=targets)
 

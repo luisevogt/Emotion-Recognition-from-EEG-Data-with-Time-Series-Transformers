@@ -53,9 +53,10 @@ if __name__ == '__main__':
     model_args = config_copy['model_args']
 
     if model_args['channel_grouping'] == 'None':
-        if dataset_args['data_tag'] == 'deap':
-            _, channel_grouping = DEAPDataset.get_channel_grouping()
-            model_args['channel_grouping'] = channel_grouping
+        model_args['channel_grouping'] = None
+    elif model_args['channel_grouping'] == 'deap' and dataset_args['data_tag'] == 'deap':
+        _, channel_grouping = DEAPDataset.get_channel_grouping()
+        model_args['channel_grouping'] = channel_grouping
 
     if model_args['lr_decay'] == 'None':
         model_args['lr_decay'] = None

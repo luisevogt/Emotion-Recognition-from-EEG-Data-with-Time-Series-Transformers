@@ -103,11 +103,9 @@ class SelectedCrossTransformer(BaseModel):
         for key in self.channel_grouping.keys():
             for value in self.channel_grouping[key]:
                 cls_tokens[value] = group_tokens[key]
-        print(x_seq.shape)
         x_seq = torch.stack([torch.stack([torch.vstack((cls_tokens[channel], x_seq[batch_idx, channel]))
                                           for channel in range(channels)])
                              for batch_idx in range(batch_size)])
-        print(x_seq.shape)
         x_seq = self.pre_norm(x_seq)
 
         # get encoder output

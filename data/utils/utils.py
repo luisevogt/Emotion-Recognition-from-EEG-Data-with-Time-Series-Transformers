@@ -64,16 +64,32 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
 
         # stratified split
-        targets = [sample[1] for sample in dataset]
+        # targets = [sample[1] for sample in dataset]
+        # FOR TEST, GO BACK AFTER
+        indexes = []
+        targets = []
+        for index, sample in enumerate(dataset):
+            if sample[1] == 0:
+                indexes.append(index)
+                targets.append(sample[1])
+            elif sample[1] == 1 and index % 2 == 0:
+                indexes.append(index)
+                targets.append(sample[1])
 
-        train_idx, test_idx = train_test_split(np.arange(len(targets)),
+        # train_idx, test_idx = train_test_split(np.arange(len(targets)),
+        #                                       test_size=test_size,
+        #                                       shuffle=True,
+        #                                       stratify=targets)
+
+        train_idx, test_idx = train_test_split(np.array(indexes),
                                                test_size=test_size,
                                                shuffle=True,
                                                stratify=targets)
 
-        targets = [targets[i] for i in train_idx]
+        # targets = [targets[i] for i in train_idx]
+        targets = [dataset.__getitem__(idx)[1] for idx in train_idx]
         train_idx, vali_idx = train_test_split(train_idx,
-                                               test_size=test_size / train_size,
+                                               test_size=vali_size / train_size,
                                                shuffle=True,
                                                stratify=targets)
 

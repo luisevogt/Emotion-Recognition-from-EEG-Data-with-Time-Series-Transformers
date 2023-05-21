@@ -30,7 +30,7 @@ class SelectedCrossTransformer(BaseModel):
                  hidden_dim=512, ff_dim=1024, num_heads=4, e_layers=3, lr=1e-3, lr_decay=0.5, momentum=0.9,
                  weight_decay=0, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
 
-        if not channel_grouping:
+        if channel_grouping is None:
             self.channel_grouping = {0: [channel_idx for channel_idx in range(data_dim)]}
         else:
             self.channel_grouping = channel_grouping
@@ -63,7 +63,7 @@ class SelectedCrossTransformer(BaseModel):
 
         # Class tokens
         self.class_tokens = nn.ParameterList([
-            nn.Parameter(torch.rand(1, hidden_dim)) for _ in range(len(channel_grouping))])
+            nn.Parameter(torch.rand(1, hidden_dim)) for _ in range(len(self.channel_grouping))])
         self.cls_pos_embedding = nn.Parameter(torch.tensor(get_cls_pos_encoding(1, hidden_dim)))
         self.cls_pos_embedding.requires_grad = False  # do not learn position encoding of cls token
 

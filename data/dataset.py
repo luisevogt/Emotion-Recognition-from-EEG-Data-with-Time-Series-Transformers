@@ -123,7 +123,8 @@ class DEAPDataset(Dataset):
             label = 1
 
         # normalize sample in every channel with min-max normalization
-        scaler = MinMaxScaler()
-        scaler.fit(data_sample)
-        ds_scaled = scaler.transform(data_sample)
-        return np.swapaxes(ds_scaled, 0, 1), label
+        # scaler = MinMaxScaler()
+        # scaler.fit(data_sample)
+        # ds_scaled = scaler.transform(data_sample)
+        # print(ds_scaled)
+        return np.swapaxes(data_sample, 0, 1), label

@@ -1,3 +1,6 @@
+import os.path
+import pickle
+
 import torch
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -44,6 +47,17 @@ def get_class_distribution_loaders(dataloader, dataset):
     return count_dict
 
 
+def write_targets(dataset, filepath):
+    targets = [sample[1] for sample in dataset]
+
+    with open(filepath, 'wb') as file:
+        pickle.dump(targets, file)
+
+
+def read_targets(filepath):
+    return pickle.load(open(filepath, 'rb'))
+
+
 def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_size=10):
     """
     Performs a stratified split on the indexes of the dataset and returns SubsetRandomSamplers for train, vali
@@ -62,32 +76,22 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     # get dataset
     if data_tag.lower() == 'deap':
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
+        cwd = os.getcwd()
+        target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
 
         # stratified split
-        # targets = [sample[1] for sample in dataset]
-        # FOR TEST, GO BACK AFTER
-        indexes = []
-        targets = []
-        for index, sample in enumerate(dataset):
-            if sample[1] == 0:
-                indexes.append(index)
-                targets.append(sample[1])
-            elif sample[1] == 1 and index % 2 == 0:
-                indexes.append(index)
-                targets.append(sample[1])
+        if not os.path.exists(target_path):
+            write_targets(dataset, target_path)
 
-        # train_idx, test_idx = train_test_split(np.arange(len(targets)),
-        #                                       test_size=test_size,
-        #                                       shuffle=True,
-        #                                       stratify=targets)
+        targets = read_targets(target_path)
 
-        train_idx, test_idx = train_test_split(np.array(indexes),
+        train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                                test_size=test_size,
                                                shuffle=True,
                                                stratify=targets)
 
-        # targets = [targets[i] for i in train_idx]
-        targets = [dataset.__getitem__(idx)[1] for idx in train_idx]
+        targets = [targets[i] for i in train_idx]
+
         train_idx, vali_idx = train_test_split(train_idx,
                                                test_size=vali_size / train_size,
                                                shuffle=True,
@@ -96,9 +100,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
-    train_sampler = SubsetRandomSampler(train_idx)
-    vali_sampler = SubsetRandomSampler(vali_idx)
-    test_sampler = SubsetRandomSampler(test_idx)
+    train_sampler = SubsetRandomSampler(train_idx[:100])
+    vali_sampler = SubsetRandomSampler(vali_idx[:100])
+    test_sampler = SubsetRandomSampler(test_idx[:100])
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

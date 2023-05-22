@@ -102,7 +102,7 @@ class TwoStageAttentionLayer(nn.Module):
 
     def forward(self, x):
         tensor_list = []
-        final_out = torch.zeros(x.shape)
+        final_out = torch.zeros(x.shape).to(x.device)
         for group_idx, channels in self.channel_grouping.items():
             # get sub-tensor with corresponding channels
             x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels).to(x.device))
@@ -134,7 +134,7 @@ class TwoStageAttentionLayer(nn.Module):
             tensor_list.append(dim_enc)
 
         # stack tensors
-        stacked_tensor = torch.cat(tensor_list, dim=1)
+        stacked_tensor = torch.cat(tensor_list, dim=1).to(x.device)
 
         # rearrange tensor to original channel order
         orig_channels = []
@@ -144,4 +144,4 @@ class TwoStageAttentionLayer(nn.Module):
         for current_pos, orig_channel in enumerate(orig_channels):
             final_out[:, orig_channel, :, :] = stacked_tensor[:, current_pos, :, :]
 
-        return final_out.to(x.device)
+        return final_out

@@ -144,4 +144,4 @@ class TwoStageAttentionLayer(nn.Module):
         for current_pos, orig_channel in enumerate(orig_channels):
             final_out[:, orig_channel, :, :] = stacked_tensor[:, current_pos, :, :]
 
-        return final_out
+        return final_out.to(x.device)

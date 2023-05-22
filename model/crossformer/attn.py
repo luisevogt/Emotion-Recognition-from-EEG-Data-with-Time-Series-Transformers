@@ -101,7 +101,8 @@ class TwoStageAttentionLayer(nn.Module):
                                   nn.Linear(d_ff, d_model))
 
     def forward(self, x):
-        final_out = None
+        tensor_list = []
+        final_out = torch.zeros(x.shape)
         for group_idx, channels in self.channel_grouping.items():
             # get sub-tensor with corresponding channels
             x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels).to(x.device))
@@ -120,7 +121,8 @@ class TwoStageAttentionLayer(nn.Module):
             # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build
             # the D-to-D connection
             dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
-            batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model', repeat=batch)
+            batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model',
+                                  repeat=batch)
             dim_buffer = self.dim_sender(batch_router, dim_send, dim_send)
             dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
             dim_enc = dim_send + self.dropout(dim_receive)
@@ -129,11 +131,17 @@ class TwoStageAttentionLayer(nn.Module):
             dim_enc = self.norm4(dim_enc)
 
             dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
+            tensor_list.append(dim_enc)
 
-            if group_idx == 0:
-                final_out = dim_enc
-            else:
-                batch_size = x.shape[0]
-                final_out = torch.stack([torch.vstack((final_out[batch_idx], dim_enc[batch_idx]))
-                                         for batch_idx in range(batch_size)])
+        # stack tensors
+        stacked_tensor = torch.cat(tensor_list, dim=1)
+
+        # rearrange tensor to original channel order
+        orig_channels = []
+        for channels in self.channel_grouping.values():
+            orig_channels += channels
+
+        for current_pos, orig_channel in enumerate(orig_channels):
+            final_out[:, orig_channel, :, :] = stacked_tensor[:, current_pos, :, :]
+
         return final_out

@@ -127,4 +127,5 @@ class DEAPDataset(Dataset):
         # scaler.fit(data_sample)
         # ds_scaled = scaler.transform(data_sample)
         # print(ds_scaled)
-        return np.swapaxes(data_sample, 0, 1), label
+        data_sample = np.swapaxes(data_sample, 0, 1)
+        return data_sample, label

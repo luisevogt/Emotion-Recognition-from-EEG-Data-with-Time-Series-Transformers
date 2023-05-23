@@ -1,0 +1,266 @@
+Mon May 22 20:24:27 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 530.41.03              Driver Version: 530.41.03    CUDA Version: 12.1     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                  Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf            Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA A100 80GB PCIe           On | 00000000:65:00.0 Off |                    0 |
+| N/A   54C    P0               51W / 300W|      0MiB / 81920MiB |      0%   E. Process |
+|                                         |                      |             Disabled |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+/appl/cuda/11.6.0/samples/bin/x86_64/linux/release/deviceQuery Starting...
+
+ CUDA Device Query (Runtime API) version (CUDART static linking)
+
+Detected 1 CUDA Capable device(s)
+
+Device 0: "NVIDIA A100 80GB PCIe"
+  CUDA Driver Version / Runtime Version          12.1 / 11.6
+  CUDA Capability Major/Minor version number:    8.0
+  Total amount of global memory:                 81093 MBytes (85031714816 bytes)
+  (108) Multiprocessors, (064) CUDA Cores/MP:    6912 CUDA Cores
+  GPU Max Clock rate:                            1410 MHz (1.41 GHz)
+  Memory Clock rate:                             1512 Mhz
+  Memory Bus Width:                              5120-bit
+  L2 Cache Size:                                 41943040 bytes
+  Maximum Texture Dimension Size (x,y,z)         1D=(131072), 2D=(131072, 65536), 3D=(16384, 16384, 16384)
+  Maximum Layered 1D Texture Size, (num) layers  1D=(32768), 2048 layers
+  Maximum Layered 2D Texture Size, (num) layers  2D=(32768, 32768), 2048 layers
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total shared memory per multiprocessor:        167936 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per multiprocessor:  2048
+  Maximum number of threads per block:           1024
+  Max dimension size of a thread block (x,y,z): (1024, 1024, 64)
+  Max dimension size of a grid size    (x,y,z): (2147483647, 65535, 65535)
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Concurrent copy and kernel execution:          Yes with 3 copy engine(s)
+  Run time limit on kernels:                     No
+  Integrated GPU sharing Host Memory:            No
+  Support host page-locked memory mapping:       Yes
+  Alignment requirement for Surfaces:            Yes
+  Device has ECC support:                        Enabled
+  Device supports Unified Addressing (UVA):      Yes
+  Device supports Managed Memory:                Yes
+  Device supports Compute Preemption:            Yes
+  Supports Cooperative Kernel Launch:            Yes
+  Supports MultiDevice Co-op Kernel Launch:      Yes
+  Device PCI Domain ID / Bus ID / location ID:   0 / 101 / 0
+  Compute Mode:
+     < Exclusive Process (many threads in one process is able to use ::cudaSetDevice() with this device) >
+
+deviceQuery, CUDA Driver = CUDART, CUDA Driver Version = 12.1, CUDA Runtime Version = 11.6, NumDevs = 1
+Result = PASS
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: pip in /appl/python/3.10.7/lib/python3.10/site-packages (21.1)
+Collecting pip
+  Using cached pip-23.1.2-py3-none-any.whl (2.1 MB)
+Installing collected packages: pip
+Successfully installed pip-23.1.2
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: setuptools in /appl/python/3.10.7/lib/python3.10/site-packages (65.3.0)
+Collecting setuptools
+  Using cached setuptools-67.8.0-py3-none-any.whl (1.1 MB)
+Installing collected packages: setuptools
+Successfully installed setuptools-67.8.0
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: einops==0.4.1 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 1)) (0.4.1)
+Requirement already satisfied: matplotlib==3.6.3 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (3.6.3)
+Requirement already satisfied: numpy==1.23.5 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 3)) (1.23.5)
+Requirement already satisfied: pandas==1.5.3 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 4)) (1.5.3)
+Requirement already satisfied: PyYAML==6.0 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 5)) (6.0)
+Requirement already satisfied: scikit_learn==1.2.1 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 6)) (1.2.1)
+Requirement already satisfied: scipy==1.10.0 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 7)) (1.10.0)
+Requirement already satisfied: seaborn==0.12.2 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 8)) (0.12.2)
+Requirement already satisfied: tensorboard==2.12.2 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (2.12.2)
+Requirement already satisfied: tensorboard-data-server==0.7.0 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 10)) (0.7.0)
+Requirement already satisfied: tensorboard-plugin-wit==1.8.1 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 11)) (1.8.1)
+Collecting torch==2.0.0
+  Using cached torch-2.0.0-cp310-cp310-manylinux1_x86_64.whl (619.9 MB)
+Collecting torchaudio==2.0.0
+  Using cached torchaudio-2.0.0-cp310-cp310-manylinux1_x86_64.whl (4.4 MB)
+Collecting torchvision==0.15.0
+  Using cached torchvision-0.15.0-cp310-cp310-manylinux1_x86_64.whl (6.0 MB)
+Requirement already satisfied: tqdm==4.64.1 in ./.local/lib/python3.10/site-packages (from -r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 15)) (4.64.1)
+Requirement already satisfied: contourpy>=1.0.1 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (1.0.7)
+Requirement already satisfied: pillow>=6.2.0 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (9.5.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (1.4.4)
+Requirement already satisfied: fonttools>=4.22.0 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (4.39.4)
+Requirement already satisfied: packaging>=20.0 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (23.1)
+Requirement already satisfied: python-dateutil>=2.7 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (2.8.2)
+Requirement already satisfied: cycler>=0.10 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (0.11.0)
+Requirement already satisfied: pyparsing>=2.2.1 in ./.local/lib/python3.10/site-packages (from matplotlib==3.6.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 2)) (3.0.9)
+Requirement already satisfied: pytz>=2020.1 in ./.local/lib/python3.10/site-packages (from pandas==1.5.3->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 4)) (2023.3)
+Requirement already satisfied: joblib>=1.1.1 in ./.local/lib/python3.10/site-packages (from scikit_learn==1.2.1->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 6)) (1.2.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in ./.local/lib/python3.10/site-packages (from scikit_learn==1.2.1->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 6)) (3.1.0)
+Requirement already satisfied: grpcio>=1.48.2 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (1.54.2)
+Requirement already satisfied: google-auth-oauthlib<1.1,>=0.5 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (1.0.0)
+Requirement already satisfied: requests<3,>=2.21.0 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (2.30.0)
+Requirement already satisfied: absl-py>=0.4 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (1.4.0)
+Requirement already satisfied: wheel>=0.26 in /appl/python/3.10.7/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (0.37.1)
+Requirement already satisfied: werkzeug>=1.0.1 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (2.3.4)
+Requirement already satisfied: markdown>=2.6.8 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (3.4.3)
+Requirement already satisfied: google-auth<3,>=1.6.3 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (2.18.0)
+Requirement already satisfied: setuptools>=41.0.0 in /appl/python/3.10.7/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (65.3.0)
+Requirement already satisfied: protobuf>=3.19.6 in ./.local/lib/python3.10/site-packages (from tensorboard==2.12.2->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 9)) (4.23.0)
+Requirement already satisfied: nvidia-nvtx-cu11==11.7.91 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.7.91)
+Requirement already satisfied: sympy in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (1.12)
+Requirement already satisfied: nvidia-cudnn-cu11==8.5.0.96 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (8.5.0.96)
+Requirement already satisfied: nvidia-cuda-runtime-cu11==11.7.99 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.7.99)
+Requirement already satisfied: nvidia-cufft-cu11==10.9.0.58 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (10.9.0.58)
+Requirement already satisfied: nvidia-cusolver-cu11==11.4.0.1 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.4.0.1)
+Requirement already satisfied: nvidia-cusparse-cu11==11.7.4.91 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.7.4.91)
+Requirement already satisfied: nvidia-nccl-cu11==2.14.3 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (2.14.3)
+Requirement already satisfied: triton==2.0.0 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (2.0.0)
+Requirement already satisfied: filelock in /appl/python/3.10.7/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (3.8.0)
+Requirement already satisfied: networkx in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (3.1)
+Requirement already satisfied: nvidia-cublas-cu11==11.10.3.66 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.10.3.66)
+Requirement already satisfied: jinja2 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (3.1.2)
+Requirement already satisfied: nvidia-cuda-cupti-cu11==11.7.101 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.7.101)
+Requirement already satisfied: typing-extensions in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (4.5.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu11==11.7.99 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (11.7.99)
+Requirement already satisfied: nvidia-curand-cu11==10.2.10.91 in ./.local/lib/python3.10/site-packages (from torch==2.0.0->-r Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/env/requirements.txt (line 12)) (10.2.10.91)
+INFO: pip is looking at multiple versions of torchaudio to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of <Python from Requires-Python> to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of torch to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of tensorboard-plugin-wit to determine which version is compatible with other requirements. This could take a while.
+Load data...
+Summary writer activated.
+GPU acceleration available on NVIDIA A100 80GB PCIe
+Start training of model SelectedCrossTransformer.
+Training model on:  NVIDIA A100 80GB PCIe
+{0} not predicted. Metrics will be 0.
+Epoch 1/100 finished. Loss: 0.6598545290246794. Acc: 0.6378560126582279.
+{0} not predicted. Metrics will be 0.
+Epoch 2/100 finished. Loss: 0.6550716052326975. Acc: 0.6378560126582279.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 3/100 finished. Loss: 0.6549480349957189. Acc: 0.6378560126582279.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 4/100 finished. Loss: 0.6551327626161938. Acc: 0.6374604430379747.
+{0} not predicted. Metrics will be 0.
+Epoch 5/100 finished. Loss: 0.655172629446923. Acc: 0.637559335443038.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 6/100 finished. Loss: 0.6548884944825233. Acc: 0.6379549050632911.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 7/100 finished. Loss: 0.6554290350479416. Acc: 0.6374604430379747.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 8/100 finished. Loss: 0.6546749646150614. Acc: 0.6379549050632911.
+EarlyStopping counter: 4 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 9/100 finished. Loss: 0.6552230455452883. Acc: 0.6379549050632911.
+EarlyStopping counter: 5 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 10/100 finished. Loss: 0.6553897533235671. Acc: 0.6373615506329114.
+EarlyStopping counter: 6 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 11/100 finished. Loss: 0.6551371163959745. Acc: 0.6374604430379747.
+EarlyStopping counter: 7 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 12/100 finished. Loss: 0.6551445428329178. Acc: 0.6376582278481012.
+EarlyStopping counter: 8 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 13/100 finished. Loss: 0.6553873551797263. Acc: 0.6371637658227848.
+{0} not predicted. Metrics will be 0.
+Epoch 14/100 finished. Loss: 0.6552073929128768. Acc: 0.6371637658227848.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 15/100 finished. Loss: 0.655293498989902. Acc: 0.6374604430379747.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 16/100 finished. Loss: 0.6551126422761362. Acc: 0.6374604430379747.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 17/100 finished. Loss: 0.6551661600794974. Acc: 0.6374604430379747.
+{0} not predicted. Metrics will be 0.
+Epoch 18/100 finished. Loss: 0.6551984027971195. Acc: 0.6371637658227848.
+{0} not predicted. Metrics will be 0.
+Epoch 19/100 finished. Loss: 0.6548099895066852. Acc: 0.6376582278481012.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 20/100 finished. Loss: 0.6550649140454545. Acc: 0.6377571202531646.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 21/100 finished. Loss: 0.6554634005208558. Acc: 0.6368670886075949.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 22/100 finished. Loss: 0.6553398385832582. Acc: 0.6372626582278481.
+EarlyStopping counter: 4 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 23/100 finished. Loss: 0.6554064135762709. Acc: 0.6371637658227848.
+EarlyStopping counter: 5 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 24/100 finished. Loss: 0.6551913072036791. Acc: 0.637559335443038.
+{0} not predicted. Metrics will be 0.
+Epoch 25/100 finished. Loss: 0.6547826664357246. Acc: 0.6377571202531646.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 26/100 finished. Loss: 0.6553056187267545. Acc: 0.6372626582278481.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 27/100 finished. Loss: 0.6550117550016958. Acc: 0.6376582278481012.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 28/100 finished. Loss: 0.6552908669544172. Acc: 0.6372626582278481.
+EarlyStopping counter: 4 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 29/100 finished. Loss: 0.6546285288243354. Acc: 0.6379549050632911.
+{0} not predicted. Metrics will be 0.
+Epoch 30/100 finished. Loss: 0.6548052120812332. Acc: 0.6374604430379747.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 31/100 finished. Loss: 0.6553573329237443. Acc: 0.6373615506329114.
+{0} not predicted. Metrics will be 0.
+Epoch 32/100 finished. Loss: 0.6549681745752504. Acc: 0.6374604430379747.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 33/100 finished. Loss: 0.6549199419685557. Acc: 0.637559335443038.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 34/100 finished. Loss: 0.6549629867076874. Acc: 0.6373615506329114.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 35/100 finished. Loss: 0.654959919331949. Acc: 0.6374604430379747.
+EarlyStopping counter: 4 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 36/100 finished. Loss: 0.6551561706428286. Acc: 0.6372626582278481.
+EarlyStopping counter: 5 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 37/100 finished. Loss: 0.6547987408275846. Acc: 0.6374604430379747.
+{0} not predicted. Metrics will be 0.
+Epoch 38/100 finished. Loss: 0.6547452879102924. Acc: 0.6374604430379747.
+EarlyStopping counter: 1 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 39/100 finished. Loss: 0.6546624951724764. Acc: 0.637559335443038.
+EarlyStopping counter: 2 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 40/100 finished. Loss: 0.6547816335400448. Acc: 0.6378560126582279.
+EarlyStopping counter: 3 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 41/100 finished. Loss: 0.6549345190766491. Acc: 0.6373615506329114.
+EarlyStopping counter: 4 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 42/100 finished. Loss: 0.6548846718631213. Acc: 0.637559335443038.
+EarlyStopping counter: 5 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 43/100 finished. Loss: 0.6547912521452843. Acc: 0.6376582278481012.
+EarlyStopping counter: 6 out of 10
+{0} not predicted. Metrics will be 0.
+Epoch 44/100 finished. Loss: 0.654974784654907. Acc: 0.6372626582278481.

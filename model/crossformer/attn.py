@@ -84,7 +84,7 @@ class TwoStageAttentionLayer(nn.Module):
         self.time_attention = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_sender = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_receiver = AttentionLayer(d_model, n_heads, dropout=dropout)
-        self.router = nn.Parameter(torch.randn(seg_num, factor, d_model))
+        self.router = nn.Parameter(torch.randn(seg_num - 1, factor, d_model))
 
         self.dropout = nn.Dropout(dropout)
 
@@ -101,6 +101,7 @@ class TwoStageAttentionLayer(nn.Module):
                                   nn.Linear(d_ff, d_model))
 
     def forward(self, x):
+        # collect group tensors in lis and init tensor of same size to keep channel order
         tensor_list = []
         final_out = torch.zeros(x.shape).to(x.device)
         for group_idx, channels in self.channel_grouping.items():
@@ -120,6 +121,12 @@ class TwoStageAttentionLayer(nn.Module):
 
             # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build
             # the D-to-D connection
+
+            # separate the CLS tokens form the signal segments
+            cls_tokens = dim_in[:, 0, :]
+            dim_in = dim_in[:, 1:, :]
+
+            cls_tokens = rearrange(cls_tokens, '(b ts_d) d_model -> b ts_d d_model', b=batch)
             dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
             batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model',
                                   repeat=batch)
@@ -131,9 +138,17 @@ class TwoStageAttentionLayer(nn.Module):
             dim_enc = self.norm4(dim_enc)
 
             dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
+
+            # concat CLS tokens with dim attentions on segment dim and append to group tensor list
+            group_channels = dim_enc.shape[1]
+            dim_enc = torch.stack([torch.stack(
+                [torch.vstack((cls_tokens[batch_idx, g_channel], dim_enc[batch_idx, g_channel]))
+                 for g_channel in range(group_channels)])
+                                   for batch_idx in range(batch)])
+
             tensor_list.append(dim_enc)
 
-        # stack tensors
+        # stack group tensors along channel dim
         stacked_tensor = torch.cat(tensor_list, dim=1).to(x.device)
 
         # rearrange tensor to original channel order

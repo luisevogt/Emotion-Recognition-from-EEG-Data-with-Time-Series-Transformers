@@ -4,7 +4,6 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset
-from sklearn.preprocessing import MinMaxScaler
 
 
 class DEAPDataset(Dataset):
@@ -122,10 +121,5 @@ class DEAPDataset(Dataset):
         elif label > self.__threshold:
             label = 1
 
-        # normalize sample in every channel with min-max normalization
-        # scaler = MinMaxScaler()
-        # scaler.fit(data_sample)
-        # ds_scaled = scaler.transform(data_sample)
-        # print(ds_scaled)
         data_sample = np.swapaxes(data_sample, 0, 1)
         return data_sample, label

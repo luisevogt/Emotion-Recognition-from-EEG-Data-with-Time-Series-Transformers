@@ -104,7 +104,7 @@ class BaseModel(nn.Module):
         # set the model into training mode
         self.train()
         # TODO patience in config and function init
-        early_stopping = EarlyStopping(patience=10, verbose=True)
+        early_stopping = EarlyStopping(patience=7, verbose=True)
 
         # run for n epochs specified
         for e in tqdm(range(epochs)):
@@ -252,13 +252,13 @@ class BaseModel(nn.Module):
         y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
         y_labels = [label.item() for label in y_labels]
 
+        y_pred = np.array(y_pred_list)
+        y_labels = np.array(y_labels, dtype=np.float64)
+
         unpred_label = set(y_labels) - set(y_pred_list)
 
         if len(unpred_label) != 0:
             print(f"{unpred_label} not predicted. Metrics will be 0.")
-
-        y_pred = np.array(y_pred_list)
-        y_labels = np.array(y_labels)
 
         report = classification_report(y_labels, y_pred,
                                        target_names=list(self.__class_names.values()),

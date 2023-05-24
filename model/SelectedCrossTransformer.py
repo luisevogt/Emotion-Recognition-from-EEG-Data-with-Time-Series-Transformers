@@ -78,7 +78,7 @@ class SelectedCrossTransformer(BaseModel):
                                dropout=dropout, in_seg_num=(self.pad_in_len // seg_length) + 1, factor=factor)
 
         # Classification Layer
-        self.classification = BinaryClassifier(hidden_dim, dropout)
+        self.classification = BinaryClassifier(hidden_dim, self.channel_grouping)
 
         # set loss function, optimizer and scheduler for learning rate decay
         self._loss_fn = nn.BCEWithLogitsLoss()

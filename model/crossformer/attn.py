@@ -109,44 +109,50 @@ class TwoStageAttentionLayer(nn.Module):
             x_sub = torch.index_select(x, dim=1, index=torch.LongTensor(channels).to(x.device))
 
             # Cross Time Stage: Directly apply MSA to each dimension
-            batch = x_sub.shape[0]
-            time_in = rearrange(x_sub, 'b ts_d seg_num d_model -> (b ts_d) seg_num d_model')
-            time_enc = self.time_attention(
-                time_in, time_in, time_in
-            )
-            dim_in = time_in + self.dropout(time_enc)
-            dim_in = self.norm1(dim_in)
-            dim_in = dim_in + self.dropout(self.MLP1(dim_in))
-            dim_in = self.norm2(dim_in)
+            # loop over batches to avoid mixing up the batches during attention
+            batch_size = x_sub.shape[0]
+            batch_list = []
+            for batch in range(batch_size):
+                time_in = x_sub[batch, :, :, :]
+                # time_in = rearrange(x_sub, 'b ts_d seg_num d_model -> (b ts_d) seg_num d_model')
+                time_enc = self.time_attention(
+                    time_in, time_in, time_in
+                )
+                dim_in = time_in + self.dropout(time_enc)
+                dim_in = self.norm1(dim_in)
+                dim_in = dim_in + self.dropout(self.MLP1(dim_in))
+                dim_in = self.norm2(dim_in)
 
-            # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build
-            # the D-to-D connection
+                # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages
+                # to build the D-to-D connection
 
-            # separate the CLS tokens form the signal segments
-            cls_tokens = dim_in[:, 0, :]
-            dim_in = dim_in[:, 1:, :]
+                # separate the CLS tokens form the signal segments
+                cls_tokens = dim_in[:, 0, :]
+                dim_send = dim_in[:, 1:, :]
 
-            cls_tokens = rearrange(cls_tokens, '(b ts_d) d_model -> b ts_d d_model', b=batch)
-            dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
-            batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model',
-                                  repeat=batch)
-            dim_buffer = self.dim_sender(batch_router, dim_send, dim_send)
-            dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
-            dim_enc = dim_send + self.dropout(dim_receive)
-            dim_enc = self.norm3(dim_enc)
-            dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
-            dim_enc = self.norm4(dim_enc)
+                # cls_tokens = rearrange(cls_tokens, '(b ts_d) d_model -> b ts_d d_model', b=batch)
+                # dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
+                # batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model',
+                #                       repeat=batch)
+                dim_buffer = self.dim_sender(self.router, dim_send, dim_send)
+                dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
+                dim_enc = dim_send + self.dropout(dim_receive)
+                dim_enc = self.norm3(dim_enc)
+                dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
+                dim_enc = self.norm4(dim_enc)
 
-            dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
+                # dim_enc = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
 
-            # concat CLS tokens with dim attentions on segment dim and append to group tensor list
-            group_channels = dim_enc.shape[1]
-            dim_enc = torch.stack([torch.stack(
-                [torch.vstack((cls_tokens[batch_idx, g_channel], dim_enc[batch_idx, g_channel]))
-                 for g_channel in range(group_channels)])
-                                   for batch_idx in range(batch)])
+                # concat CLS tokens with dim attentions on segment dim and append to group tensor list
+                group_channels = dim_enc.shape[1]
+                dim_enc = torch.stack(
+                    [torch.vstack((cls_tokens[g_channel], dim_enc[g_channel]))
+                     for g_channel in range(group_channels)])
 
-            tensor_list.append(dim_enc)
+                batch_list.append(dim_enc)
+
+            batch_enc = torch.stack(batch_list)
+            tensor_list.append(batch_enc)
 
         # stack group tensors along channel dim
         stacked_tensor = torch.cat(tensor_list, dim=1).to(x.device)

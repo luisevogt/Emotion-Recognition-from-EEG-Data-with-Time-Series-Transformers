@@ -7,6 +7,7 @@ from config.config import Config
 from data.dataset import DEAPDataset
 from data.utils.utils import stratify_data, get_class_distribution_loaders
 from model.SelectedCrossTransformer import SelectedCrossTransformer
+from torchsummary import summary
 from model.base_model import BaseModel
 
 config = Config()
@@ -46,6 +47,9 @@ if __name__ == '__main__':
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
     test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
 
+    #for t in train_loader:
+    #    print(t)
+
     # get model
     device = config_copy['device']
 
@@ -78,6 +82,8 @@ if __name__ == '__main__':
             torch.cuda.manual_seed_all(seed)
 
     print(f'Start training of model {model_name}.')
+
+    print(summary(model, input_size=(768, 32)))
 
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])

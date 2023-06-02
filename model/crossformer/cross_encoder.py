@@ -95,7 +95,7 @@ class Encoder(nn.Module):
     '''
 
     def __init__(self, e_blocks, win_size, d_model, n_heads, channel_grouping, d_ff, block_depth, dropout,
-                 in_seg_num=10, factor=10):
+                 in_seg_num=10, factor=8):
         super(Encoder, self).__init__()
 
         self.channel_grouping = channel_grouping

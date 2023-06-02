@@ -13,6 +13,7 @@ from math import ceil
 from model.crossformer.cross_embed import DSW_embedding
 from model.crossformer.cross_encoder import Encoder
 from model.classifier.BinaryClassifier import BinaryClassifier
+from model.classifier.encoder.c_encoder import EncoderClassifier
 
 
 def get_cls_pos_encoding(seq_length, d):
@@ -78,7 +79,7 @@ class SelectedCrossTransformer(BaseModel):
                                dropout=dropout, in_seg_num=(self.pad_in_len // seg_length) + 1, factor=factor)
 
         # Classification Layer
-        self.classification = BinaryClassifier(hidden_dim, self.channel_grouping)
+        self.classification = BinaryClassifier(hidden_dim=hidden_dim, channel_grouping=self.channel_grouping)
 
         # set loss function, optimizer and scheduler for learning rate decay
         self._loss_fn = nn.BCEWithLogitsLoss()
@@ -103,9 +104,24 @@ class SelectedCrossTransformer(BaseModel):
         for key in self.channel_grouping.keys():
             for value in self.channel_grouping[key]:
                 cls_tokens[value] = group_tokens[key]
+
+        """
+        tmp_xseq = []
+        for batch_idx in range(batch_size):
+            tmp = []
+            for channel in range(channels):
+                tmp.append(torch.vstack((cls_tokens[channel], x_seq[batch_idx, channel])))
+
+            tmp_xseq.append(torch.stack(tmp))
+
+        x_seq_2 = torch.stack(tmp_xseq)
+        
+        """
+
         x_seq = torch.stack([torch.stack([torch.vstack((cls_tokens[channel], x_seq[batch_idx, channel]))
                                           for channel in range(channels)])
                              for batch_idx in range(batch_size)])
+
         x_seq = self.pre_norm(x_seq)
 
         # get encoder output

@@ -93,15 +93,17 @@ class DEAPDataset(Dataset):
         # decompress index
         current_participant = 0
         current_trail = 0
-        while idx - current_participant * self._sample_per_part > self._sample_per_part:
+        while idx - current_participant * self._sample_per_part >= self._sample_per_part:
             current_participant += 1
 
         sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
-        while sample_idx > self._sample_num:
+        while sample_idx >= self._sample_num:
             current_trail += 1
             if current_trail >= self._trail_num:
                 current_trail = 0
             sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
+
+        sample_idx = sample_idx * self.sample_size
 
         # load dataset
         filepath = os.path.join(self.data_dir, self.filenames[current_participant])

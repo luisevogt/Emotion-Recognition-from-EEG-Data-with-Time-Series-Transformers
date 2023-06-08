@@ -13,7 +13,6 @@ from math import ceil
 from model.crossformer.cross_embed import DSW_embedding
 from model.crossformer.cross_encoder import Encoder
 from model.classifier.BinaryClassifier import BinaryClassifier
-from model.classifier.encoder.c_encoder import EncoderClassifier
 
 
 def get_cls_pos_encoding(seq_length, d):

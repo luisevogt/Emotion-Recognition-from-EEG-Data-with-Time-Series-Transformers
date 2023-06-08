@@ -47,9 +47,6 @@ if __name__ == '__main__':
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
     test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
 
-    #for t in train_loader:
-    #    print(t)
-
     # get model
     device = config_copy['device']
 

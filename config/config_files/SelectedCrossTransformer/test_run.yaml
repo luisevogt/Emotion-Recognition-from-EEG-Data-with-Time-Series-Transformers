@@ -1,28 +1,27 @@
-device: cuda
+device: cpu
 seed: None
 evaluation: None
 train_epochs: 5
 classification_tag: a
 dataset_args:
     split: [0.6, 0.2, 0.2]
-    data_dir: datasets/DEAP/data_preprocessed_python
+    data_dir: datasets/DEAP/data_normalized_python
     data_tag: deap
-    sample_size: 10
+    sample_size: 6
 dataloader_args:
-    batch_size: 16
-    num_workers: 2
-    shuffle: True
+    batch_size: 4
+    num_workers: 1
 model_name: SelectedCrossTransformer
 save_every: 10
 model_args:
-    tag: SelectedCrossTransformer/test_1
+    tag: SelectedCrossTransformer/test_2
     log: True
     data_dim: 32
-    channel_grouping: None
-    seg_length: 20
-    win_size: 2
-    factor: 10
-    hidden_dim: 256
+    channel_grouping: deap
+    seg_length: 96
+    win_size: 1
+    factor: 4
+    hidden_dim: 128
     ff_dim: 512
     num_heads: 4
     e_layers: 3

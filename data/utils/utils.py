@@ -3,6 +3,7 @@ import pickle
 
 import torch
 import numpy as np
+import tqdm
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
 
@@ -48,7 +49,7 @@ def get_class_distribution_loaders(dataloader, dataset):
 
 
 def write_targets(dataset, filepath):
-    targets = [sample[1] for sample in dataset]
+    targets = [sample[1] for sample in tqdm.tqdm(dataset)]
 
     with open(filepath, 'wb') as file:
         pickle.dump(targets, file)
@@ -100,9 +101,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
-    train_sampler = SubsetRandomSampler(train_idx[:100])
-    vali_sampler = SubsetRandomSampler(vali_idx[:100])
-    test_sampler = SubsetRandomSampler(test_idx[:100])
+    train_sampler = SubsetRandomSampler(train_idx)
+    vali_sampler = SubsetRandomSampler(vali_idx)
+    test_sampler = SubsetRandomSampler(test_idx)
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

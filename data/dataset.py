@@ -194,7 +194,7 @@ class WESADDataset(Dataset):
 
         # decompress index
         current_participant = 0
-        while idx - current_participant * self.sample_num > self.sample_num:
+        while idx - current_participant * self.sample_num >= self.sample_num:
             current_participant += 1
 
         sample_idx = idx - current_participant * self.sample_num

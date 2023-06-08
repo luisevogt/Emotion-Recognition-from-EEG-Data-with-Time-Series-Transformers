@@ -1,7 +1,7 @@
 import os.path
 import pickle
 
-import torch
+import tqdm
 import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -48,7 +48,7 @@ def get_class_distribution_loaders(dataloader, dataset):
 
 
 def write_targets(dataset, filepath):
-    targets = [sample[1] for sample in dataset]
+    targets = [sample[1] for sample in tqdm.tqdm(dataset)]
 
     with open(filepath, 'wb') as file:
         pickle.dump(targets, file)

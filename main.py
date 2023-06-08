@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from config.config import Config
-from data.dataset import DEAPDataset
+from data.dataset import DEAPDataset, WESADDataset
 from data.utils.utils import stratify_data, get_class_distribution_loaders
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from torchsummary import summary
@@ -47,9 +47,6 @@ if __name__ == '__main__':
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
     test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
 
-    #for t in train_loader:
-    #    print(t)
-
     # get model
     device = config_copy['device']
 
@@ -66,7 +63,10 @@ if __name__ == '__main__':
         model_args['lr_decay'] = None
 
     sample_size = config_copy['dataset_args']['sample_size']
-    sample_freq = DEAPDataset.sample_freq
+    if dataset_args['data_tag'] == 'deap':
+        sample_freq = DEAPDataset.sample_freq
+    if dataset_args['data_tag'] == 'wesad':
+        sample_freq = WESADDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     print(f'Start training of model {model_name}.')
 
-    print(summary(model, input_size=(768, 32)))
+    # print(summary(model, input_size=(768, 32)))
 
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])

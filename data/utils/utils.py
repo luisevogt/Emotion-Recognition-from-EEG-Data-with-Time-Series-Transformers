@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data.dataset import DEAPDataset
+from data.dataset import DEAPDataset, WESADDataset
 
 
 def get_class_distribution(dataset):
@@ -79,28 +79,35 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
         cwd = os.getcwd()
         target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
 
-        # stratified split
-        if not os.path.exists(target_path):
-            write_targets(dataset, target_path)
-
-        targets = read_targets(target_path)
-
-        train_idx, test_idx = train_test_split(np.arange(len(targets)),
-                                               test_size=test_size,
-                                               shuffle=True,
-                                               stratify=targets)
-
-        targets = [targets[i] for i in train_idx]
-
-        train_idx, vali_idx = train_test_split(train_idx,
-                                               test_size=vali_size / train_size,
-                                               shuffle=True,
-                                               stratify=targets)
+    elif data_tag.lower() == 'wesad':
+        dataset = WESADDataset(data_dir, sample_size)
+        cwd = os.getcwd()
+        target_path = os.path.join(cwd, 'datasets', 'WESAD', f'wesad_targets_size_{sample_size}.pkl')
 
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
-    train_sampler = SubsetRandomSampler(train_idx[:100])
+    # stratified split
+    if not os.path.exists(target_path):
+        print("Writing targets...")
+        write_targets(dataset, target_path)
+
+    print("Read targets")
+    targets = read_targets(target_path)
+
+    train_idx, test_idx = train_test_split(np.arange(len(targets)),
+                                           test_size=test_size,
+                                           shuffle=True,
+                                           stratify=targets)
+
+    targets = [targets[i] for i in train_idx]
+
+    train_idx, vali_idx = train_test_split(train_idx,
+                                           test_size=vali_size / train_size,
+                                           shuffle=True,
+                                           stratify=targets)
+
+    train_sampler = SubsetRandomSampler(train_idx[:500])
     vali_sampler = SubsetRandomSampler(vali_idx[:100])
     test_sampler = SubsetRandomSampler(test_idx[:100])
 

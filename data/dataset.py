@@ -123,3 +123,110 @@ class DEAPDataset(Dataset):
 
         data_sample = np.swapaxes(data_sample, 0, 1)
         return data_sample, label
+
+
+class WESADDataset(Dataset):
+    """
+        WESAD Dataset for testing purposes.
+        """
+
+    sample_freq = 700
+
+    def __init__(self, data_dir, sample_size=6):
+        """
+            :param data_dir: Directory with the datasets from all participants.
+            'a' for arousal, 'v' for valence and 'd' for dominance.
+            :param sample_size: The size of the sample in seconds. Default is 10.
+            """
+
+        self.__class_names = {
+            0: "not defined",
+            1: "baseline",
+            2: "stress",
+            3: "amusement",
+            4: "meditation",
+            5: "should not be used",
+        }
+
+        self.data_dir = data_dir
+        self.__sample_freq = WESADDataset.sample_freq
+        self.sample_size = sample_size * self.__sample_freq
+        self.sample_num = 6060 * self.__sample_freq // self.sample_size
+
+        self.filenames = []
+
+        for p_dir in os.listdir(self.data_dir):
+            if os.path.isdir(os.path.join(self.data_dir, p_dir)):
+                pkl_dir = os.path.join(self.data_dir, p_dir, p_dir + '.pkl')
+                self.filenames.append(pkl_dir)
+
+    def get_class_names(self):
+        return self.__class_names
+
+    @staticmethod
+    def get_channel_grouping():
+        group_idx_to_name = {0: 'ACG',
+                             1: 'ECG',
+                             2: 'EDA',
+                             3: 'BVP',
+                             4: 'EMG',
+                             5: 'RESP',
+                             6: 'TEMP'}
+
+        channel_grouping = {0: [0, 1, 2, 3, 4],
+                            1: [5],
+                            2: [6, 7],
+                            3: [8],
+                            4: [9],
+                            5: [10],
+                            6: [11, 12]}
+        return group_idx_to_name, channel_grouping
+
+    def __len__(self):
+        participant_count = len(self.filenames)
+
+        return participant_count * self.sample_num
+
+    def __getitem__(self, idx):
+        # flatten
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        # decompress index
+        current_participant = 0
+        while idx - current_participant * self.sample_num > self.sample_num:
+            current_participant += 1
+
+        sample_idx = idx - current_participant * self.sample_num
+
+        # load data
+        filepath = self.filenames[current_participant]
+        file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        chest_data = file["signal"]["chest"]
+        # wrist_data = file["signal"]["wrist"]
+        data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
+        # NOTE include wrist data, do the calulcations from read me
+        data = torch.cat(data, dim=1)
+
+        label = torch.from_numpy(file["label"])
+        check = torch.nonzero(label)
+
+        # get sample and label
+        array_idx = sample_idx * self.sample_size
+        data_sample = data[array_idx:array_idx + self.sample_size, :].to(torch.float32)
+        sample_label = label[array_idx:array_idx + self.sample_size]
+        label_dist = torch.bincount(sample_label)
+        label = torch.argmax(label_dist)
+
+        if label == 5 or label == 6 or label == 7:
+            label = 5
+
+        return data_sample, label
+
+
+if __name__ == '__main__':
+    dataset = WESADDataset('../datasets/WESAD')
+
+    counter = 0
+    for la, di in dataset:
+        print(di)

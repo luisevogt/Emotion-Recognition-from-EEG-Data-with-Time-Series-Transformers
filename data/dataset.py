@@ -223,10 +223,3 @@ class WESADDataset(Dataset):
 
         return data_sample, label
 
-
-if __name__ == '__main__':
-    dataset = WESADDataset('../datasets/WESAD')
-
-    counter = 0
-    for la, di in dataset:
-        print(di)

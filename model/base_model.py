@@ -133,10 +133,9 @@ class BaseModel(nn.Module):
                 # perform the prediction and measure the loss between the prediction
                 # and the expected output
                 _y = self(X)
-
-                loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
+                loss = self._loss_fn(_y, torch.LongTensor(y))
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
-                accuracy = acc_metric(_y, y.unsqueeze(1).type(torch.float32))
+                accuracy = acc_metric(_y, torch.LongTensor(y))
 
                 # run backpropagation
                 loss.backward()

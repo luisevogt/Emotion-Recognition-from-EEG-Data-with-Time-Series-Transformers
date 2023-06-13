@@ -151,7 +151,7 @@ class WESADDataset(Dataset):
         self.data_dir = data_dir
         self.__sample_freq = WESADDataset.sample_freq
         self.sample_size = sample_size * self.__sample_freq
-        self.sample_num = 6060 * self.__sample_freq // self.sample_size
+        self.sample_num = 5233 * self.__sample_freq // self.sample_size
 
         self.filenames = []
 
@@ -206,10 +206,9 @@ class WESADDataset(Dataset):
         # wrist_data = file["signal"]["wrist"]
         data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
         # NOTE include wrist data, do the calulcations from read me
-        data = torch.cat(data, dim=1)
+        data = torch.cat(data, dim=1)[:3663100]
 
-        label = torch.from_numpy(file["label"])
-        check = torch.nonzero(label)
+        label = torch.from_numpy(file["label"])[:3663100]
 
         # get sample and label
         array_idx = sample_idx * self.sample_size
@@ -223,3 +222,19 @@ class WESADDataset(Dataset):
 
         return data_sample, label
 
+
+if __name__ == "__main__":
+
+    filenames = []
+    data_dir = "../datasets/WESAD/WESAD"
+    for p_dir in os.listdir(data_dir):
+        if os.path.isdir(os.path.join(data_dir, p_dir)):
+            pkl_dir = os.path.join(data_dir, p_dir, p_dir + '.pkl')
+            filenames.append(pkl_dir)
+
+    for filepath in filenames:
+        file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        chest_data = file["signal"]["chest"]
+        data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
+        data = torch.cat(data, dim=1)
+        print(data.shape)

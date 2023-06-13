@@ -1,7 +1,7 @@
 import argparse
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 
 from config.config import Config
 from data.dataset import DEAPDataset, WESADDataset
@@ -41,11 +41,20 @@ if __name__ == '__main__':
 
     dataloader_args = config_copy['dataloader_args']
 
-    dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
+    # dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
-    train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
-    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
-    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
+    if dataset_args["data_tag"] == "wesad":
+        dataset = WESADDataset(dataset_args["data_dir"], sample_size=7)
+
+    generator = torch.Generator().manual_seed(42)
+    train, vali, test = random_split(dataset, dataset_args["split"], generator)
+
+    # train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
+    # vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
+    # test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
+    train_loader = DataLoader(dataset=train, **dataloader_args, pin_memory=True, shuffle=True)
+    vali_loader = DataLoader(dataset=vali, batch_size=1, pin_memory=True, shuffle=True)
+    test_loader = DataLoader(dataset=test, batch_size=1, pin_memory=True, shuffle=False)
 
     # get model
     device = config_copy['device']

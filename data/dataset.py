@@ -2,6 +2,7 @@ import glob
 import os
 import pickle
 import numpy as np
+import pandas
 import torch
 
 from torch.utils.data import Dataset
@@ -135,7 +136,7 @@ class SEEDDataset(Dataset):
 
     sample_freq = 200
 
-    def __init__(self, data_dir, sample_size):
+    def __init__(self, data_dir, sample_size=6):
         self.__class_names = {0: 'negative',
                               1: 'neutral',
                               2: 'positive'}
@@ -146,10 +147,77 @@ class SEEDDataset(Dataset):
             1: 2
         }
 
+        self.__trail_lengths = [47001, 46601, 41201, 47601, 37001, 39001, 47401, 43201, 53001, 47401, 47001, 47601]
+
         self.data_dir = data_dir
         self.__sample_freq = SEEDDataset.sample_freq
         self.sample_size = sample_size * self.__sample_freq
         self._trail_num = 15
+        self.samples_per_trail = [t_len // self.sample_size for t_len in self.__trail_lengths]
+        self._samples_per_file = sum(self.samples_per_trail)
+
+        # save filenames in a list for fast access
+        self.filenames = glob.glob(os.path.join(path, '*_*.mat'))
+        self.labels = scipy.io.loadmat(os.path.join(path, "label.mat")).tolist()[0]
+
+    def get_class_names(self):
+        return self.__class_names
+
+    @staticmethod
+    def get_channel_grouping():
+        group_idx_to_name = {0: 'left frontal region',
+                             1: 'right frontal region',
+                             2: 'left parietal-temporal-occipital',
+                             3: 'right parietal-temporal-occipital',
+                             4: 'center'}
+
+        channel_grouping = {0: [0, 3, 5, 6, 7, 8, 14, 15, 16, 17],
+                            1: [2, 4, 10, 11, 12, 13, 19, 20, 21, 22],
+                            2: [32, 33, 34, 35, 41, 42, 43, 44, 50, 51, 52, 57, 58],
+                            3: [37, 38, 39, 40, 46, 47, 48, 49, 54, 55, 56, 60, 61],
+                            4: [1, 9, 18, 23, 24, 25, 26, 27, 28, 29, 30, 31, 36, 45, 53, 59]}
+
+        return group_idx_to_name, channel_grouping
+
+    def __len__(self):
+        file_count = len(self.filenames)
+
+        return file_count * self._samples_per_file
+
+    def __getitem__(self, idx):
+
+        # flatten
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        current_file = 0
+        current_trail = 0
+
+        while idx - current_file * self._samples_per_file >= self._samples_per_file:
+            current_file += 1
+
+        sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[current_trail]
+        while sample_idx >= self.samples_per_trail[current_trail]:
+            current_trail += 1
+            if current_trail >= self._trail_num:
+                current_trail = 0
+            sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[current_trail]
+
+        sample_idx = sample_idx * self.sample_size
+
+        # load data
+        file = scipy.io.laodmat(self.filenames[current_file])
+        key = list(file.keys())[3][:-1]
+        data = file[key + str(current_trail + 1)]
+
+        # get sample and label
+        data_sample = data[:, sample_idx:sample_idx + self.samples_per_trail[current_trail]]
+        data_sample = np.float32(data_sample)
+        label = self.__label_to_class[self.labels[current_trail]]
+
+        data_sample = np.swapaxes(data_sample, 0, 1)
+
+        return data_sample, label
 
 
 if __name__ == '__main__':
@@ -157,12 +225,10 @@ if __name__ == '__main__':
 
     import scipy.io
 
-    filenames = glob.glob(os.path.join(path, '*_*.mat'))
+    dataset = SEEDDataset(path)
 
-    for filename in filenames:
-        mat = scipy.io.loadmat(filename)
-        print(f"shapes of {filename}")
-        key = list(mat.keys())[3][:-1]
-        print(key)
-        for i in range(1, 15):
-            print(mat[key + str(i)].shape)
+    print(dataset.__len__())
+
+    for d, l in dataset:
+        print(d.shape)
+        print(l)

@@ -158,7 +158,7 @@ class SEEDDataset(Dataset):
 
         # save filenames in a list for fast access
         self.filenames = glob.glob(os.path.join(path, '*_*.mat'))
-        self.labels = scipy.io.loadmat(os.path.join(path, "label.mat")).tolist()[0]
+        self.labels = scipy.io.loadmat(os.path.join(path, "label.mat"))['label'].tolist()[0]
 
     def get_class_names(self):
         return self.__class_names
@@ -201,17 +201,18 @@ class SEEDDataset(Dataset):
             current_trail += 1
             if current_trail >= self._trail_num:
                 current_trail = 0
-            sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[current_trail]
+            sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[
+                current_trail]
 
         sample_idx = sample_idx * self.sample_size
 
         # load data
-        file = scipy.io.laodmat(self.filenames[current_file])
+        file = scipy.io.loadmat(self.filenames[current_file])
         key = list(file.keys())[3][:-1]
         data = file[key + str(current_trail + 1)]
 
         # get sample and label
-        data_sample = data[:, sample_idx:sample_idx + self.samples_per_trail[current_trail]]
+        data_sample = data[:, sample_idx:sample_idx + self.sample_size]
         data_sample = np.float32(data_sample)
         label = self.__label_to_class[self.labels[current_trail]]
 

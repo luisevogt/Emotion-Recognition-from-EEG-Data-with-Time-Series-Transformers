@@ -101,9 +101,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
-    train_sampler = SubsetRandomSampler(train_idx)
-    vali_sampler = SubsetRandomSampler(vali_idx)
-    test_sampler = SubsetRandomSampler(test_idx)
+    train_sampler = SubsetRandomSampler(train_idx[:1000])
+    vali_sampler = SubsetRandomSampler(vali_idx[:100])
+    test_sampler = SubsetRandomSampler(test_idx[:100])
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

@@ -1,3 +1,4 @@
+import glob
 import os
 import pickle
 import numpy as np
@@ -125,3 +126,43 @@ class DEAPDataset(Dataset):
 
         data_sample = np.swapaxes(data_sample, 0, 1)
         return data_sample, label
+
+
+class SEEDDataset(Dataset):
+    """
+    SEED dataset.
+    """
+
+    sample_freq = 200
+
+    def __init__(self, data_dir, sample_size):
+        self.__class_names = {0: 'negative',
+                              1: 'neutral',
+                              2: 'positive'}
+
+        self.__label_to_class = {
+            -1: 0,
+            0: 1,
+            1: 2
+        }
+
+        self.data_dir = data_dir
+        self.__sample_freq = SEEDDataset.sample_freq
+        self.sample_size = sample_size * self.__sample_freq
+        self._trail_num = 15
+
+
+if __name__ == '__main__':
+    path = '../datasets/SEED_EEG/Preprocessed_EEG'
+
+    import scipy.io
+
+    filenames = glob.glob(os.path.join(path, '*_*.mat'))
+
+    for filename in filenames:
+        mat = scipy.io.loadmat(filename)
+        print(f"shapes of {filename}")
+        key = list(mat.keys())[3][:-1]
+        print(key)
+        for i in range(1, 15):
+            print(mat[key + str(i)].shape)

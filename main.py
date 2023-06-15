@@ -4,11 +4,12 @@ import torch
 from torch.utils.data import DataLoader
 
 from config.config import Config
-from data.dataset import DEAPDataset
-from data.utils.utils import stratify_data, get_class_distribution_loaders
+from data.dataset import DEAPDataset, SEEDDataset
+from data.utils.utils import stratify_data, get_class_distribution
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from torchsummary import summary
 from model.base_model import BaseModel
+from plot.plot import plot_bar_chart
 
 config = Config()
 config_dict = None
@@ -42,6 +43,9 @@ if __name__ == '__main__':
     dataloader_args = config_copy['dataloader_args']
 
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
+    dist = get_class_distribution(dataset)
+    plot_bar_chart(dist, (12, 7), x='class names', y='count', caption='Class Distribution in SEED',
+                   save_folder='plot/plots')
 
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
@@ -59,11 +63,16 @@ if __name__ == '__main__':
         _, channel_grouping = DEAPDataset.get_channel_grouping()
         model_args['channel_grouping'] = channel_grouping
 
+        sample_freq = DEAPDataset.sample_freq
+    elif model_args['channel_grouping'] == 'seed' and dataset_args['data_tag'] == 'seed':
+        _, channel_grouping = SEEDDataset.get_channel_grouping()
+        model_args['channel_grouping'] = channel_grouping
+        sample_freq = SEEDDataset.sample_freq
+
     if model_args['lr_decay'] == 'None':
         model_args['lr_decay'] = None
 
     sample_size = config_copy['dataset_args']['sample_size']
-    sample_freq = DEAPDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 
@@ -80,7 +89,7 @@ if __name__ == '__main__':
 
     print(f'Start training of model {model_name}.')
 
-    print(summary(model, input_size=(128, 32)))
+    # print(summary(model, input_size=(128, 32)))
 
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])

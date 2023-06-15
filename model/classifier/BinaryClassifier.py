@@ -11,7 +11,7 @@ class BinaryClassifier(nn.Module):
 
         self.num_cls_tokens = len(channel_grouping)
         self.channel_grouping = channel_grouping
-        self.layer_1 = nn.Linear(hidden_dim * self.num_cls_tokens, 1)
+        self.layer_1 = nn.Linear(hidden_dim * self.num_cls_tokens, 3)
         # self.layer_2 = nn.Linear(self._reduced_dim, self._reduced_dim)
         # self.layer_out = nn.Linear(self._reduced_dim, 1)
 

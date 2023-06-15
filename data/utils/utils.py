@@ -7,7 +7,7 @@ import tqdm
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data.dataset import DEAPDataset
+from data.dataset import DEAPDataset, SEEDDataset
 
 
 def get_class_distribution(dataset):
@@ -29,8 +29,18 @@ def get_class_distribution(dataset):
             label = element[1]
             label = idx_to_class_names[label]
             count_dict[label] += 1
+    elif isinstance(dataset, SEEDDataset):
+        # get class names
+        idx_to_class_names = dataset.get_class_names()
 
-        return count_dict
+        # keep track of counts in a dict
+        count_dict = {v: 0 for v in idx_to_class_names.values()}
+        for element in dataset:
+            label = element[1]
+            label = idx_to_class_names[label]
+            count_dict[label] += 1
+
+    return count_dict
 
 
 def get_class_distribution_loaders(dataloader, dataset):
@@ -80,30 +90,34 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
         cwd = os.getcwd()
         target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
 
-        # stratified split
-        if not os.path.exists(target_path):
-            write_targets(dataset, target_path)
-
-        targets = read_targets(target_path)
-
-        train_idx, test_idx = train_test_split(np.arange(len(targets)),
-                                               test_size=test_size,
-                                               shuffle=True,
-                                               stratify=targets)
-
-        targets = [targets[i] for i in train_idx]
-
-        train_idx, vali_idx = train_test_split(train_idx,
-                                               test_size=vali_size / train_size,
-                                               shuffle=True,
-                                               stratify=targets)
-
+    elif data_tag.lower() == 'seed':
+        dataset = SEEDDataset(data_dir, sample_size)
+        cwd = os.getcwd()
+        target_path = os.path.join(cwd, 'datasets', 'SEED_EEG', f'seed_targets_size_{sample_size}.pkl')
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
-    train_sampler = SubsetRandomSampler(train_idx[:1000])
-    vali_sampler = SubsetRandomSampler(vali_idx[:100])
-    test_sampler = SubsetRandomSampler(test_idx[:100])
+    # stratified split
+    if not os.path.exists(target_path):
+        write_targets(dataset, target_path)
+
+    targets = read_targets(target_path)
+
+    train_idx, test_idx = train_test_split(np.arange(len(targets)),
+                                           test_size=test_size,
+                                           shuffle=True,
+                                           stratify=targets)
+
+    targets = [targets[i] for i in train_idx]
+
+    train_idx, vali_idx = train_test_split(train_idx,
+                                           test_size=vali_size / train_size,
+                                           shuffle=True,
+                                           stratify=targets)
+
+    train_sampler = SubsetRandomSampler(train_idx)
+    vali_sampler = SubsetRandomSampler(vali_idx)
+    test_sampler = SubsetRandomSampler(test_idx)
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

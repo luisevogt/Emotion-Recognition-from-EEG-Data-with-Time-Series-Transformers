@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import pandas
 import torch
+import scipy.io
 
 from torch.utils.data import Dataset
 
@@ -157,8 +158,8 @@ class SEEDDataset(Dataset):
         self._samples_per_file = sum(self.samples_per_trail)
 
         # save filenames in a list for fast access
-        self.filenames = glob.glob(os.path.join(path, '*_*.mat'))
-        self.labels = scipy.io.loadmat(os.path.join(path, "label.mat"))['label'].tolist()[0]
+        self.filenames = glob.glob(os.path.join(data_dir, '*_*.mat'))
+        self.labels = scipy.io.loadmat(os.path.join(data_dir, "label.mat"))['label'].tolist()[0]
 
     def get_class_names(self):
         return self.__class_names

@@ -148,7 +148,8 @@ class SEEDDataset(Dataset):
             1: 2
         }
 
-        self.__trail_lengths = [47001, 46601, 41201, 47601, 37001, 39001, 47401, 43201, 53001, 47401, 47001, 47601]
+        self.__trail_lengths = [47001, 46601, 41201, 47601, 37001, 39001, 47401, 43201, 53001, 47401, 47001,
+                                46601, 47001, 47601, 41201]
 
         self.data_dir = data_dir
         self.__sample_freq = SEEDDataset.sample_freq
@@ -192,29 +193,38 @@ class SEEDDataset(Dataset):
             idx = idx.tolist()
 
         current_file = 0
-        current_trail = 0
+        current_trial = 0
 
         while idx - current_file * self._samples_per_file >= self._samples_per_file:
             current_file += 1
 
-        sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trail])
-        while sample_idx >= sum(self.samples_per_trail[:current_trail+1]):
-            current_trail += 1
-            if current_trail >= self._trail_num:
-                current_trail = 0
-            sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trail])
+        # sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trial])
+        file_idx = idx - current_file * self._samples_per_file
+        sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
+        while sample_idx >= 0:
+            current_trial += 1
+            sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
+        if current_trial != 0:
+            current_trial -= 1
+        sample_idx = self.samples_per_trail[current_trial] + sample_idx  # sample_idx is negative
+
+        # while sample_idx >= sum(self.samples_per_trail[:current_trial+1]):
+        #     current_trial += 1
+        #     if current_trial >= self._trail_num:
+        #         current_trial = 0
+        #    sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trial])
 
         sample_idx = sample_idx * self.sample_size
 
         # load data
         file = scipy.io.loadmat(self.filenames[current_file])
         key = list(file.keys())[3][:-1]
-        data = file[key + str(current_trail + 1)]
+        data = file[key + str(current_trial + 1)]
 
         # get sample and label
         data_sample = data[:, sample_idx:sample_idx + self.sample_size]
         data_sample = np.float32(data_sample)
-        label = self.__label_to_class[self.labels[current_trail]]
+        label = self.__label_to_class[self.labels[current_trial]]
 
         data_sample = np.swapaxes(data_sample, 0, 1)
 
@@ -237,4 +247,3 @@ if __name__ == '__main__':
         for t in range(1, 16):
             data = file[key + str(t)]
             print(data.shape)
-

@@ -277,7 +277,7 @@ class BaseModel(nn.Module):
                 # get 0 or 1 label for confusion matrix and classification report
                 # _y = torch.sigmoid(_y)
                 # _y_label = torch.round(_y)
-                _y_label = torch.argmax(torch.softmax(_y, dim=-1))
+                _y_label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
                 y_pred_list.append(_y_label.detach().cpu().numpy())
 
                 y_labels.append(y.detach().cpu().numpy())

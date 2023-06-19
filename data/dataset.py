@@ -197,13 +197,12 @@ class SEEDDataset(Dataset):
         while idx - current_file * self._samples_per_file >= self._samples_per_file:
             current_file += 1
 
-        sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[current_trail]
-        while sample_idx >= self.samples_per_trail[current_trail]:
+        sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trail])
+        while sample_idx >= sum(self.samples_per_trail[:current_trail+1]):
             current_trail += 1
             if current_trail >= self._trail_num:
                 current_trail = 0
-            sample_idx = idx - current_file * self._samples_per_file - current_trail * self.samples_per_trail[
-                current_trail]
+            sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trail])
 
         sample_idx = sample_idx * self.sample_size
 
@@ -231,6 +230,11 @@ if __name__ == '__main__':
 
     print(dataset.__len__())
 
-    for d, l in dataset:
-        print(d.shape)
-        print(l)
+    for filename in dataset.filenames:
+        file = scipy.io.loadmat(filename)
+        key = list(file.keys())[3][:-1]
+        print(file.keys())
+        for t in range(1, 16):
+            data = file[key + str(t)]
+            print(data.shape)
+

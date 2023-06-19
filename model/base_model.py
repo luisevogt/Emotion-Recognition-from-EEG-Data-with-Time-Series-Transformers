@@ -121,7 +121,7 @@ class BaseModel(nn.Module):
             losses = []
             accuracies = []
 
-            acc_metric = MulticlassAccuracy(num_classes=3)
+            acc_metric = MulticlassAccuracy(num_classes=3, average=None)
 
             # run for each batch in training set
             for X, y in train:
@@ -140,7 +140,8 @@ class BaseModel(nn.Module):
 
                 # SEED
                 loss = self._loss_fn(_y, torch.LongTensor(y))
-                accuracy = self.__binary_acc(_y, torch.LongTensor(y))
+                label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
+                accuracy = acc_metric(label, torch.LongTensor(y))
 
                 # run backpropagation
                 loss.backward()
@@ -215,7 +216,7 @@ class BaseModel(nn.Module):
         accuracies = []
         losses = []
 
-        acc_metric = MulticlassAccuracy(num_classes=3)
+        acc_metric = MulticlassAccuracy(num_classes=3, average=None)
         # predict all y's of the validation set and append the model's accuracy 
         # to the list
         with torch.no_grad():
@@ -228,7 +229,8 @@ class BaseModel(nn.Module):
                 # loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
                 loss = self._loss_fn(_y, torch.LongTensor(y))
-                accuracy = self.__binary_acc(_y, torch.LongTensor(y))
+                label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
+                accuracy = acc_metric(label, torch.LongTensor(y))
 
                 losses.append(loss.detach().cpu().item())
                 # accuracies.append(accuracy.detach().cpu().item())

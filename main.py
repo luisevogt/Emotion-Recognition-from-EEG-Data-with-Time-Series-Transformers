@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     print(f'Start training of model {model_name}.')
 
-    print(summary(model, input_size=(768, 32)))
+    # print(summary(model, input_size=(768, 32)))
 
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])

@@ -120,7 +120,7 @@ class BaseModel(nn.Module):
             losses = []
             accuracies = []
 
-            acc_metric = MulticlassAccuracy(num_classes=5)
+            acc_metric = MulticlassAccuracy(num_classes=6, average=None)
 
             # run for each batch in training set
             for X, y in train:
@@ -133,9 +133,13 @@ class BaseModel(nn.Module):
                 # perform the prediction and measure the loss between the prediction
                 # and the expected output
                 _y = self(X)
-                loss = self._loss_fn(_y, torch.LongTensor(y))
+                # loss = self._loss_fn(_y, torch.LongTensor(y))
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
-                accuracy = acc_metric(_y, torch.LongTensor(y))
+
+                # WESAD
+                loss = self._loss_fn(_y, torch.LongTensor(y))
+                label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
+                accuracy = acc_metric(label, torch.LongTensor(y))
 
                 # run backpropagation
                 loss.backward()
@@ -208,7 +212,7 @@ class BaseModel(nn.Module):
         accuracies = []
         losses = []
 
-        acc_metric = MulticlassAccuracy(num_classes=5)
+        acc_metric = MulticlassAccuracy(num_classes=6, average=None)
 
         # predict all y's of the validation set and append the model's accuracy 
         # to the list
@@ -219,11 +223,16 @@ class BaseModel(nn.Module):
 
                 _y = self(X)
 
-                loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
+                # loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
-                accuracy = acc_metric(_y, y.unsqueeze(1).type(torch.float32))
+
+                # WESAD
+                loss = self._loss_fn(_y, torch.LongTensor(y))
+                label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
+                accuracy = acc_metric(label, torch.LongTensor(y))
+
                 losses.append(loss.detach().cpu().item())
-                accuracies.append(accuracy.detach().cpu().item())
+                accuracies.append(accuracy.detach().cpu())
 
         # calculate mean accuracy and loss
         loss = np.mean(losses, axis=0)
@@ -265,7 +274,7 @@ class BaseModel(nn.Module):
                 # get 0 or 1 label for confusion matrix and classification report
                 # _y = torch.sigmoid(_y)
                 # _y_label = torch.round(_y)
-                _y_label = torch.argmax(torch.softmax(_y, dim=-1))
+                _y_label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
                 y_pred_list.append(_y_label.detach().cpu().numpy())
 
                 y_labels.append(y.detach().cpu().numpy())

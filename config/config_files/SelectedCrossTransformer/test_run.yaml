@@ -5,7 +5,7 @@ train_epochs: 10
 classification_tag: a
 dataset_args:
     split: [0.8, 0.1, 0.1]
-    data_dir: datasets/WESAD/WESAD
+    data_dir: datasets/WESAD
     data_tag: wesad
     sample_size: 7
 dataloader_args:
@@ -20,7 +20,7 @@ model_args:
     channel_grouping: None
     seg_length: 700
     win_size: 1
-    factor: 2
+    factor: 4
     hidden_dim: 128
     ff_dim: 256
     num_heads: 4

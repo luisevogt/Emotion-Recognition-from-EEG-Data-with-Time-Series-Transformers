@@ -215,7 +215,7 @@ class WESADDataset(Dataset):
         data_sample = data[array_idx:array_idx + self.sample_size, :].to(torch.float32)
         sample_label = label[array_idx:array_idx + self.sample_size]
         label_dist = torch.bincount(sample_label)
-        label = torch.argmax(label_dist)
+        label = torch.argmax(label_dist).item()
 
         if label == 5 or label == 6 or label == 7:
             label = 5

@@ -121,7 +121,7 @@ class BaseModel(nn.Module):
             losses = []
             accuracies = []
 
-            acc_metric = MulticlassAccuracy(num_classes=3, average=None)
+            acc_metric = MulticlassAccuracy(num_classes=3, average=None).to(self._device)
 
             # run for each batch in training set
             for X, y in train:
@@ -139,9 +139,9 @@ class BaseModel(nn.Module):
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # SEED
-                loss = self._loss_fn(_y, torch.LongTensor(y))
+                loss = self._loss_fn(_y, y.to(torch.int64))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
-                accuracy = acc_metric(label, torch.LongTensor(y))
+                accuracy = acc_metric(label, y.to(torch.int64))
 
                 # run backpropagation
                 loss.backward()
@@ -163,7 +163,7 @@ class BaseModel(nn.Module):
             # log epoch loss and acc in tensorboard
             e_loss = np.mean(losses, axis=0)
             # e_acc = np.mean(accuracies, axis=0)
-            acc_tensor = torch.cat(accuracies, dim=0)
+            acc_tensor = torch.stack(accuracies)
             e_acc = torch.mean(acc_tensor, dim=0)
 
             self._writer.add_scalar("Train/mean_loss", e_loss, e + 1)
@@ -216,7 +216,7 @@ class BaseModel(nn.Module):
         accuracies = []
         losses = []
 
-        acc_metric = MulticlassAccuracy(num_classes=3, average=None)
+        acc_metric = MulticlassAccuracy(num_classes=3, average=None).to(self._device)
         # predict all y's of the validation set and append the model's accuracy 
         # to the list
         with torch.no_grad():
@@ -228,9 +228,9 @@ class BaseModel(nn.Module):
 
                 # loss = self._loss_fn(_y, y.unsqueeze(1).type(torch.float32))
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
-                loss = self._loss_fn(_y, torch.LongTensor(y))
+                loss = self._loss_fn(_y, y.to(torch.int64))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
-                accuracy = acc_metric(label, torch.LongTensor(y))
+                accuracy = acc_metric(label, y.to(torch.int64))
 
                 losses.append(loss.detach().cpu().item())
                 # accuracies.append(accuracy.detach().cpu().item())
@@ -239,9 +239,8 @@ class BaseModel(nn.Module):
         # calculate mean accuracy and loss
         loss = np.mean(losses, axis=0)
         # accuracy = np.mean(accuracies, axis=0)
-        acc_tensor = torch.cat(accuracies, dim=0)
+        acc_tensor = torch.stack(accuracies)
         e_acc = torch.mean(acc_tensor, dim=0)
-
 
         # log to the tensorboard if wanted
         if log_step != -1:
@@ -297,6 +296,7 @@ class BaseModel(nn.Module):
 
         report = classification_report(y_labels, y_pred,
                                        target_names=list(self.__class_names.values()),
+                                       labels=list(self.__class_names.keys()),
                                        output_dict=True)
 
         for cls_idx, class_name in self.__class_names.items():
@@ -318,10 +318,10 @@ class BaseModel(nn.Module):
         # f1_score_0 = report[self.__class_names[0]]['f1-score']
         # f1_score_1 = report[self.__class_names[1]]['f1-score']
 
-        test_accuracy = report['accuracy']
+        # test_accuracy = report['accuracy']
 
         # get confusion matrix and log to tensorboard if wanted
-        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list))
+        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list), labels=list(self.__class_names.keys()))
         df_cm = pd.DataFrame(cm / np.sum(cm, axis=1)[:, None],
                              index=[value for value in self.__class_names.values()],
                              columns=[value for value in self.__class_names.values()])

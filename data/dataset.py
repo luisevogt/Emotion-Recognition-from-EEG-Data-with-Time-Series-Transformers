@@ -198,7 +198,6 @@ class SEEDDataset(Dataset):
         while idx - current_file * self._samples_per_file >= self._samples_per_file:
             current_file += 1
 
-        # sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trial])
         file_idx = idx - current_file * self._samples_per_file
         sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
         while sample_idx >= 0:
@@ -207,12 +206,6 @@ class SEEDDataset(Dataset):
         if current_trial != 0:
             current_trial -= 1
         sample_idx = self.samples_per_trail[current_trial] + sample_idx  # sample_idx is negative
-
-        # while sample_idx >= sum(self.samples_per_trail[:current_trial+1]):
-        #     current_trial += 1
-        #     if current_trial >= self._trail_num:
-        #         current_trial = 0
-        #    sample_idx = idx - current_file * self._samples_per_file - sum(self.samples_per_trail[:current_trial])
 
         sample_idx = sample_idx * self.sample_size
 

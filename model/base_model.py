@@ -137,7 +137,7 @@ class BaseModel(nn.Module):
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # WESAD
-                loss = self._loss_fn(_y, torch.LongTensor(y))
+                loss = self._loss_fn(_y, torch.LongTensor(y.detach().cpu()))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
                 accuracy = acc_metric(label, torch.LongTensor(y))
 
@@ -227,7 +227,7 @@ class BaseModel(nn.Module):
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # WESAD
-                loss = self._loss_fn(_y, torch.LongTensor(y))
+                loss = self._loss_fn(_y, torch.LongTensor(y.detach().cpu()))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
                 accuracy = acc_metric(label, torch.LongTensor(y))
 

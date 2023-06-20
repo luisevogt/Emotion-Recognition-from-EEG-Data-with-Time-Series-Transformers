@@ -43,8 +43,8 @@ if __name__ == '__main__':
 
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
-    if dataset_args["data_tag"] == "wesad":
-        dataset = WESADDataset(dataset_args["data_dir"], sample_size=7)
+    # if dataset_args["data_tag"] == "wesad":
+    #    dataset = WESADDataset(dataset_args["data_dir"], sample_size=7)
 
     # generator = torch.Generator().manual_seed(42)
     # train, vali, test = random_split(dataset, dataset_args["split"], generator)

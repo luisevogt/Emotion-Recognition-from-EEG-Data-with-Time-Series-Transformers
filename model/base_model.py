@@ -47,6 +47,7 @@ class BaseModel(nn.Module):
             2: "stress",
             3: "amusement",
             4: "meditation",
+            5: "should not be used",
         }
 
         # enable tensorboard
@@ -120,7 +121,7 @@ class BaseModel(nn.Module):
             losses = []
             accuracies = []
 
-            acc_metric = MulticlassAccuracy(num_classes=6, average=None)
+            acc_metric = MulticlassAccuracy(num_classes=6, average='weighted').to(self._device)
 
             # run for each batch in training set
             for X, y in train:
@@ -137,35 +138,37 @@ class BaseModel(nn.Module):
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # WESAD
-                loss = self._loss_fn(_y, torch.LongTensor(y.detach().cpu()))
+                loss = self._loss_fn(_y, y.to(torch.int64))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
-                accuracy = acc_metric(label, torch.LongTensor(y))
+                accuracy = acc_metric(label, y.to(torch.int64))
 
                 # run backpropagation
                 loss.backward()
                 self._optim.step()
 
                 losses.append(loss.detach().cpu().item())
-                # accuracies.append(accuracy.detach().cpu().item())
-                accuracies.append(accuracy.detach().cpu())
+                accuracies.append(accuracy.detach().cpu().item())
+                # accuracies.append(accuracy.detach().cpu()) when multi class acc
 
                 # log to tensorboard
                 self._writer.add_scalar("Train/loss", losses[-1], self.__sample_position)
-                for cls_idx, class_name in self.__class_names.items():
-                    self._writer.add_scalar(f"Train/accuracy_{class_name}", accuracies[-1][cls_idx],
-                                            self.__sample_position)
+                self._writer.add_scalar("Train/accuracy", accuracies[-1], self.__sample_position)
+                # for cls_idx, class_name in self.__class_names.items():
+                #     self._writer.add_scalar(f"Train/accuracy_{class_name}", accuracies[-1][cls_idx],
+                #                             self.__sample_position)
 
                 self.__sample_position += X.size(0)
 
             # log epoch loss and acc in tensorboard
             e_loss = np.mean(losses, axis=0)
-            # e_acc = np.mean(accuracies, axis=0)
-            acc_tensor = torch.cat(accuracies, dim=0)
-            e_acc = torch.mean(acc_tensor, dim=0)
+            e_acc = np.mean(accuracies, axis=0)
+            # acc_tensor = torch.stack(accuracies)
+            # e_acc = torch.mean(acc_tensor, dim=0)
 
             self._writer.add_scalar("Train/mean_loss", e_loss, e + 1)
-            for cls_idx, class_name in self.__class_names.items():
-                self._writer.add_scalar(f"Train/mean_accuracy_{class_name}", e_acc[cls_idx], e + 1)
+            self._writer.add_scalar("Train/mean_accuracy", e_acc, e + 1)
+            # for cls_idx, class_name in self.__class_names.items():
+            #     self._writer.add_scalar(f"Train/mean_accuracy_{class_name}", e_acc[cls_idx], e + 1)
 
             # if there is an adaptive learning rate (scheduler) available
             if self._scheduler:
@@ -212,8 +215,7 @@ class BaseModel(nn.Module):
         accuracies = []
         losses = []
 
-        acc_metric = MulticlassAccuracy(num_classes=6, average=None)
-
+        acc_metric = MulticlassAccuracy(num_classes=6, average='weighted').to(self._device)
         # predict all y's of the validation set and append the model's accuracy 
         # to the list
         with torch.no_grad():
@@ -227,25 +229,26 @@ class BaseModel(nn.Module):
                 # accuracy = self.__binary_acc(_y, y.unsqueeze(1).type(torch.float32))
 
                 # WESAD
-                loss = self._loss_fn(_y, torch.LongTensor(y.detach().cpu()))
+                loss = self._loss_fn(_y, y.to(torch.int64))
                 label = torch.argmax(torch.softmax(_y, dim=-1), dim=-1)
-                accuracy = acc_metric(label, torch.LongTensor(y))
+                accuracy = acc_metric(label, y.to(torch.int64))
 
                 losses.append(loss.detach().cpu().item())
-                accuracies.append(accuracy.detach().cpu())
+                # accuracies.append(accuracy.detach().cpu())
+                accuracies.append(accuracy.detach().cpu().item())
 
         # calculate mean accuracy and loss
         loss = np.mean(losses, axis=0)
-        # accuracy = np.mean(accuracies, axis=0)
-        acc_tensor = torch.cat(accuracies, dim=0)
-        e_acc = torch.mean(acc_tensor, dim=0)
+        accuracy = np.mean(accuracies, axis=0)
+        # acc_tensor = torch.stack(accuracies)
+        # e_acc = torch.mean(acc_tensor, dim=0)
 
         # log to the tensorboard if wanted
         if log_step != -1:
-            # self._writer.add_scalar("Validation/accuracy", accuracy, log_step)
+            self._writer.add_scalar("Validation/accuracy", accuracy, log_step)
             self._writer.add_scalar("Validation/loss", loss, log_step)
-            for cls_idx, class_name in self.__class_names.items():
-                self._writer.add_scalar(f"Validation/mean_accuracy_{class_name}", e_acc[cls_idx], log_step)
+            # for cls_idx, class_name in self.__class_names.items():
+            #     self._writer.add_scalar(f"Validation/mean_accuracy_{class_name}", e_acc[cls_idx], log_step)
 
         return loss
 
@@ -294,6 +297,7 @@ class BaseModel(nn.Module):
 
         report = classification_report(y_labels, y_pred,
                                        target_names=list(self.__class_names.values()),
+                                       labels=list(self.__class_names.keys()),
                                        output_dict=True)
 
         for cls_idx, class_name in self.__class_names.items():
@@ -306,10 +310,10 @@ class BaseModel(nn.Module):
                 self._writer.add_scalar(f"Test/recall_{class_name}", recall, log_step)
                 self._writer.add_scalar(f"Test/f1_score_{class_name}", f1, log_step)
 
-        test_accuracy = report['accuracy']
+        # test_accuracy = report['accuracy']
 
-        if log_step != -1:
-            self._writer.add_scalar("Test/accuracy", test_accuracy, log_step)
+        # if log_step != -1:
+        #    self._writer.add_scalar("Test/accuracy", test_accuracy, log_step)
 
         # precision_0 = report[self.__class_names[0]]['precision']
         # precision_1 = report[self.__class_names[1]]['precision']
@@ -323,7 +327,7 @@ class BaseModel(nn.Module):
         # test_accuracy = report['accuracy']
 
         # get confusion matrix and log to tensorboard if wanted
-        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list))
+        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list), labels=list(self.__class_names.keys()))
         df_cm = pd.DataFrame(cm / np.sum(cm, axis=1)[:, None],
                              index=[value for value in self.__class_names.values()],
                              columns=[value for value in self.__class_names.values()])

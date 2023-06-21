@@ -302,7 +302,7 @@ class BaseModel(nn.Module):
         for cls_idx, class_name in self.__class_names.items():
             precision = report[class_name]['precision']
             recall = report[class_name]['recall']
-            f1 = report[class_name]['f1']
+            f1 = report[class_name]['f1-score']
 
             if log_step != -1:
                 self._writer.add_scalar(f"Test/precision_{class_name}", precision, log_step)

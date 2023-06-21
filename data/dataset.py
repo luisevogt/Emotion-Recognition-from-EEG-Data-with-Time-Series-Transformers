@@ -6,6 +6,7 @@ import pandas
 import torch
 import scipy.io
 
+
 from torch.utils.data import Dataset
 
 
@@ -223,20 +224,3 @@ class SEEDDataset(Dataset):
 
         return data_sample, label
 
-
-if __name__ == '__main__':
-    path = '../datasets/SEED_EEG/Preprocessed_EEG'
-
-    import scipy.io
-
-    dataset = SEEDDataset(path)
-
-    print(dataset.__len__())
-
-    for filename in dataset.filenames:
-        file = scipy.io.loadmat(filename)
-        key = list(file.keys())[3][:-1]
-        print(file.keys())
-        for t in range(1, 16):
-            data = file[key + str(t)]
-            print(data.shape)

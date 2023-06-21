@@ -1,7 +1,11 @@
 import os
 import pickle
+import time
+from pathlib import Path
+
 import numpy as np
 import torch
+import tqdm
 
 from torch.utils.data import Dataset
 
@@ -132,7 +136,7 @@ class WESADDataset(Dataset):
 
     sample_freq = 700
 
-    def __init__(self, data_dir, sample_size=6):
+    def __init__(self, data_dir, sample_size=6, samples_per_file=500):
         """
             :param data_dir: Directory with the datasets from all participants.
             'a' for arousal, 'v' for valence and 'd' for dominance.
@@ -148,20 +152,99 @@ class WESADDataset(Dataset):
             5: "should not be used",
         }
 
+        self.__samples_per_file = samples_per_file
+
         self.data_dir = data_dir
         self.__sample_freq = WESADDataset.sample_freq
         self.sample_size = sample_size * self.__sample_freq
-        self.sample_num = 5233 * self.__sample_freq // self.sample_size
+        self.sample_num = 5223 * self.__sample_freq // self.sample_size
 
         self.filenames = []
 
         for p_dir in os.listdir(self.data_dir):
-            if os.path.isdir(os.path.join(self.data_dir, p_dir)):
+            if os.path.isdir(os.path.join(self.data_dir, p_dir)) and 'size' not in p_dir:
                 pkl_dir = os.path.join(self.data_dir, p_dir, p_dir + '.pkl')
                 self.filenames.append(pkl_dir)
 
+        self.length = len(self.filenames) * self.sample_num
+
+        self.to_samples(self.__samples_per_file)
+
     def get_class_names(self):
         return self.__class_names
+
+    def to_samples(self, samples_per_file=500):
+        """splits data into samples of given sample size to speed up dataloading. Saves a list of targets."""
+        print("Write samples...")
+        start_time = time.time()
+
+        new_data_path = os.path.join(self.data_dir, f'samples_size_{self.sample_size // self.__sample_freq}')
+        # if samples are already there, update
+        if os.path.exists(new_data_path) and len(os.listdir(new_data_path)) != 0:
+            self.data_dir = new_data_path
+            self.filenames = []
+            for p_file in os.listdir(self.data_dir):
+                if os.path.isfile(os.path.join(self.data_dir, p_file)) and 'targets' not in p_file:
+                    self.filenames.append(os.path.join(self.data_dir, p_file))
+            self.targets = os.path.join(self.data_dir, f'targets_wesad_size_{self.sample_size // self.__sample_freq}.pkl')
+            print("files already exist.")
+            return
+
+        Path(new_data_path).mkdir(parents=True, exist_ok=True)
+
+        samples = []
+        targets = []
+        counter = samples_per_file
+        for filename in self.filenames:
+            # read file and get data
+            file = pickle.load(open(filename, 'rb'), encoding='latin1')
+            chest_data = file['signal']['chest']
+            data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
+            data = torch.cat(data, dim=1)[:3656100]
+
+            label_array = torch.from_numpy(file["label"])[:3656100]
+
+            for sample_idx in range(self.sample_num):
+                # get sample and label
+                array_idx = sample_idx * self.sample_size
+                data_sample = data[array_idx:array_idx + self.sample_size, :].to(torch.float32)
+                sample_label = label_array[array_idx:array_idx + self.sample_size]
+                label_dist = torch.bincount(sample_label)
+                label = torch.argmax(label_dist).item()
+
+                if label == 5 or label == 6 or label == 7:
+                    label = 5
+
+                if len(samples) == samples_per_file:
+                    with open(os.path.join(new_data_path, f'{counter}_wesad_size_{self.sample_size // self.__sample_freq}.pkl'),
+                              'wb') as s_file:
+                        sample_array = torch.stack(samples)
+                        pickle.dump(sample_array, s_file)
+
+                    counter += samples_per_file
+                    samples = []
+
+                samples.append(data_sample)
+                targets.append(label)
+
+        with open(os.path.join(new_data_path, f'{counter}_wesad_size_{self.sample_size // self.__sample_freq}.pkl'), 'wb') as s_file:
+            sample_array = torch.stack(samples)
+            pickle.dump(sample_array, s_file)
+
+        with open(os.path.join(new_data_path, f'targets_wesad_size_{self.sample_size // self.__sample_freq}.pkl'), 'wb') as t_file:
+            pickle.dump(targets, t_file)
+
+        self.data_dir = new_data_path
+        self.filenames = []
+        for p_file in os.listdir(self.data_dir):
+            if os.path.isfile(os.path.join(self.data_dir, p_file)) and 'targets' not in p_file:
+                self.filenames.append(os.path.join(self.data_dir, p_file))
+        self.targets = os.path.join(self.data_dir, f'targets_wesad_size_{self.sample_size // self.__sample_freq}.pkl')
+
+        end_time = time.time()
+
+        el_time = end_time - start_time
+        print(f'Wrote samples in {el_time}')
 
     @staticmethod
     def get_channel_grouping():
@@ -183,42 +266,21 @@ class WESADDataset(Dataset):
         return group_idx_to_name, channel_grouping
 
     def __len__(self):
-        participant_count = len(self.filenames)
-
-        return participant_count * self.sample_num
+        return self.length
 
     def __getitem__(self, idx):
         # flatten
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        # decompress index
-        current_participant = 0
-        while idx - current_participant * self.sample_num >= self.sample_num:
-            current_participant += 1
+        file_idx = ((idx // self.__samples_per_file) + 1) * self.__samples_per_file
+        sample_idx = idx - (idx // self.__samples_per_file) * self.__samples_per_file
 
-        sample_idx = idx - current_participant * self.sample_num
-
-        # load data
-        filepath = self.filenames[current_participant]
-        file = pickle.load(open(filepath, 'rb'), encoding='latin1')
-        chest_data = file["signal"]["chest"]
-        # wrist_data = file["signal"]["wrist"]
-        data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
-        # NOTE include wrist data, do the calulcations from read me
-        data = torch.cat(data, dim=1)[:3663100]
-
-        label = torch.from_numpy(file["label"])[:3663100]
-
-        # get sample and label
-        array_idx = sample_idx * self.sample_size
-        data_sample = data[array_idx:array_idx + self.sample_size, :].to(torch.float32)
-        sample_label = label[array_idx:array_idx + self.sample_size]
-        label_dist = torch.bincount(sample_label)
-        label = torch.argmax(label_dist).item()
-
-        if label == 5 or label == 6 or label == 7:
-            label = 5
+        filepath = next((f for f in self.filenames if os.path.basename(f).startswith(str(file_idx))), None)
+        data = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        labels = pickle.load(open(self.targets, 'rb'), encoding='latin1')
+        data_sample = data[sample_idx]
+        label = labels[idx]
 
         return data_sample, label
 
@@ -227,14 +289,8 @@ if __name__ == "__main__":
 
     filenames = []
     data_dir = "../datasets/WESAD/WESAD"
-    for p_dir in os.listdir(data_dir):
-        if os.path.isdir(os.path.join(data_dir, p_dir)):
-            pkl_dir = os.path.join(data_dir, p_dir, p_dir + '.pkl')
-            filenames.append(pkl_dir)
 
-    for filepath in filenames:
-        file = pickle.load(open(filepath, 'rb'), encoding='latin1')
-        chest_data = file["signal"]["chest"]
-        data = list(map(lambda x: torch.from_numpy(x), list(chest_data.values())))
-        data = torch.cat(data, dim=1)
-        print(data.shape)
+    dataset = WESADDataset(data_dir)
+    print(dataset.__len__())
+    # print(dataset.__getitem__(1007))
+    [sample[1] for sample in tqdm.tqdm(dataset)]

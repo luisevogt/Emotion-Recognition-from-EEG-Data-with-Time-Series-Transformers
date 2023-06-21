@@ -47,13 +47,6 @@ def get_class_distribution_loaders(dataloader, dataset):
     return count_dict
 
 
-def write_targets(dataset, filepath):
-    targets = [sample[1] for sample in tqdm.tqdm(dataset)]
-
-    with open(filepath, 'wb') as file:
-        pickle.dump(targets, file)
-
-
 def read_targets(filepath):
     return pickle.load(open(filepath, 'rb'))
 
@@ -76,24 +69,17 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     # get dataset
     if data_tag.lower() == 'deap':
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
-        cwd = os.getcwd()
-        target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
 
     elif data_tag.lower() == 'wesad':
         dataset = WESADDataset(data_dir, sample_size)
-        cwd = os.getcwd()
-        target_path = os.path.join(cwd, 'datasets', 'WESAD', f'wesad_targets_size_{sample_size}.pkl')
 
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
 
     # stratified split
-    if not os.path.exists(target_path):
-        print("Writing targets...")
-        write_targets(dataset, target_path)
 
     print("Read targets")
-    targets = read_targets(target_path)
+    targets = read_targets(dataset.targets)
 
     train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                            test_size=test_size,
@@ -107,9 +93,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
                                            shuffle=True,
                                            stratify=targets)
 
-    train_sampler = SubsetRandomSampler(train_idx)
-    vali_sampler = SubsetRandomSampler(vali_idx)
-    test_sampler = SubsetRandomSampler(test_idx)
+    train_sampler = SubsetRandomSampler(train_idx[:500])
+    vali_sampler = SubsetRandomSampler(vali_idx[:100])
+    test_sampler = SubsetRandomSampler(test_idx[:100])
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

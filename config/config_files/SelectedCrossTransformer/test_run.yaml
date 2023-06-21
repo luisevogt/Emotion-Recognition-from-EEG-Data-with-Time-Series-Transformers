@@ -1,11 +1,11 @@
-device: cpu
+device: cuda
 seed: None
 evaluation: None
 train_epochs: 10
 classification_tag: a
 dataset_args:
     split: [0.8, 0.1, 0.1]
-    data_dir: datasets/SEED_EEG/Preprocessed_EEG
+    data_dir: datasets/SEED_TEST
     data_tag: seed
     sample_size: 6
 dataloader_args:

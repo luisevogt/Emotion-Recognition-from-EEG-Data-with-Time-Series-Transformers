@@ -1,4 +1,4 @@
-device: cpu
+device: cuda
 seed: None
 evaluation: None
 train_epochs: 10
@@ -25,7 +25,7 @@ model_args:
     ff_dim: 512
     num_heads: 4
     e_layers: 3
-    lr: 0.001
+    lr: 0.01
     lr_decay: 0.5
     momentum: 0.9
     weight_decay: 0.01

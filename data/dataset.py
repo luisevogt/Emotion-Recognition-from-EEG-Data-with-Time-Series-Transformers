@@ -1,6 +1,9 @@
 import glob
 import os
 import pickle
+import time
+from pathlib import Path
+
 import numpy as np
 import pandas
 import torch
@@ -8,6 +11,7 @@ import scipy.io
 
 
 from torch.utils.data import Dataset
+import tqdm
 
 
 class DEAPDataset(Dataset):
@@ -138,7 +142,7 @@ class SEEDDataset(Dataset):
 
     sample_freq = 200
 
-    def __init__(self, data_dir, sample_size=6):
+    def __init__(self, data_dir, sample_size=6, save_per_file=250):
         self.__class_names = {0: 'negative',
                               1: 'neutral',
                               2: 'positive'}
@@ -148,6 +152,8 @@ class SEEDDataset(Dataset):
             0: 1,
             1: 2
         }
+
+        self.__save_per_file = save_per_file
 
         self.__trail_lengths = [47001, 46601, 41201, 47601, 37001, 39001, 47401, 43201, 53001, 47401, 47001,
                                 46601, 47001, 47601, 41201]
@@ -161,10 +167,86 @@ class SEEDDataset(Dataset):
 
         # save filenames in a list for fast access
         self.filenames = glob.glob(os.path.join(data_dir, '*_*.mat'))
-        self.labels = scipy.io.loadmat(os.path.join(data_dir, "label.mat"))['label'].tolist()[0]
+
+        self.length = len(self.filenames) * self._samples_per_file
+
+        self.to_samples(self.__save_per_file)
 
     def get_class_names(self):
         return self.__class_names
+
+    def to_samples(self, samples_per_file):
+        """
+        splits data into samples of given size to speed up dataloading. Also saves a list of targets.
+        """
+
+        print("Write samples...")
+        start_time = time.time()
+
+        new_data_path = os.path.join(self.data_dir, f'samples_size_{self.sample_size // self.sample_freq}')
+        # is samples are already there, update paths
+        if os.path.exists(new_data_path) and len(os.listdir(new_data_path)) != 0:
+            self.data_dir = new_data_path
+            self.filenames = glob.glob(os.path.join(self.data_dir, '*_seed_size_*.pkl'))
+            self.targets = os.path.join(new_data_path,
+                                        f'targets_seed_size_{self.sample_size // self.__sample_freq}.pkl')
+
+            print("files already exist.")
+            return
+
+        Path(new_data_path).mkdir(parents=True, exist_ok=True)
+
+        samples = []
+        targets = []
+        counter = samples_per_file
+
+        labels = scipy.io.loadmat(os.path.join(self.data_dir, "label.mat"))['label'].tolist()[0]
+
+        for filename in self.filenames:
+
+            # load data
+            file = scipy.io.loadmat(filename)
+            key = list(file.keys())[3][:-1]
+            for trail_idx in range(self._trail_num):
+                data = file[key + str(trail_idx + 1)]
+
+                for sample_idx in range(self.samples_per_trail[trail_idx]):
+                    # get sample and label
+                    array_idx = sample_idx * self.sample_size
+                    data_sample = data[:, array_idx:array_idx + self.sample_size]
+                    data_sample = np.float32(data_sample)
+                    data_sample = np.swapaxes(data_sample, 0, 1)
+                    label = self.__label_to_class[labels[trail_idx]]
+
+                    if len(samples) == samples_per_file:
+                        with open(os.path.join(new_data_path,
+                                               f'{counter}_seed_size_{self.sample_size // self.__sample_freq}.pkl'),
+                                  'wb') as s_file:
+                            sample_array = np.stack(samples)
+                            pickle.dump(sample_array, s_file)
+                        counter += samples_per_file
+                        samples = []
+
+                    samples.append(data_sample)
+                    targets.append(label)
+
+        with open(os.path.join(new_data_path, f'{counter}_seed_size_{self.sample_size // self.__sample_freq}.pkl'),
+                  'wb') as s_file:
+            sample_array = np.stack(samples)
+            pickle.dump(sample_array, s_file)
+
+        with open(os.path.join(new_data_path, f'targets_seed_size_{self.sample_size // self.__sample_freq}.pkl'),
+                  'wb') as t_file:
+            pickle.dump(targets, t_file)
+
+        self.data_dir = new_data_path
+        self.filenames = glob.glob(os.path.join(self.data_dir, '*_seed_size_*.pkl'))
+        self.targets = os.path.join(new_data_path, f'targets_seed_size_{self.sample_size // self.__sample_freq}.pkl')
+
+        end_time = time.time()
+
+        el_time = end_time - start_time
+        print(f'Wrote samples in {el_time}')
 
     @staticmethod
     def get_channel_grouping():
@@ -183,9 +265,8 @@ class SEEDDataset(Dataset):
         return group_idx_to_name, channel_grouping
 
     def __len__(self):
-        file_count = len(self.filenames)
 
-        return file_count * self._samples_per_file
+        return self.length
 
     def __getitem__(self, idx):
 
@@ -193,34 +274,51 @@ class SEEDDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        current_file = 0
-        current_trial = 0
+        file_idx = ((idx // self.__save_per_file) + 1) * self.__save_per_file
+        sample_idx = idx - (idx // self.__save_per_file) * self.__save_per_file
 
-        while idx - current_file * self._samples_per_file >= self._samples_per_file:
-            current_file += 1
-
-        file_idx = idx - current_file * self._samples_per_file
-        sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
-        while sample_idx >= 0:
-            current_trial += 1
-            sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
-        if current_trial != 0:
-            current_trial -= 1
-        sample_idx = self.samples_per_trail[current_trial] + sample_idx  # sample_idx is negative
-
-        sample_idx = sample_idx * self.sample_size
-
-        # load data
-        file = scipy.io.loadmat(self.filenames[current_file])
-        key = list(file.keys())[3][:-1]
-        data = file[key + str(current_trial + 1)]
-
-        # get sample and label
-        data_sample = data[:, sample_idx:sample_idx + self.sample_size]
-        data_sample = np.float32(data_sample)
-        label = self.__label_to_class[self.labels[current_trial]]
-
-        data_sample = np.swapaxes(data_sample, 0, 1)
+        filepath = next((f for f in self.filenames if os.path.basename(f).startswith(str(file_idx))), None)
+        data = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        labels = pickle.load(open(self.targets, 'rb'), encoding='latin1')
+        data_sample = data[sample_idx]
+        label = labels[idx]
+        # current_file = 0
+        # current_trial = 0
+        #
+        # while idx - current_file * self._samples_per_file >= self._samples_per_file:
+        #     current_file += 1
+        #
+        # file_idx = idx - current_file * self._samples_per_file
+        # sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
+        # while sample_idx >= 0:
+        #     current_trial += 1
+        #     sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
+        # if current_trial != 0:
+        #     current_trial -= 1
+        # sample_idx = self.samples_per_trail[current_trial] + sample_idx  # sample_idx is negative
+        #
+        # sample_idx = sample_idx * self.sample_size
+        #
+        # # load data
+        # file = scipy.io.loadmat(self.filenames[current_file])
+        # key = list(file.keys())[3][:-1]
+        # data = file[key + str(current_trial + 1)]
+        #
+        # # get sample and label
+        # data_sample = data[:, sample_idx:sample_idx + self.sample_size]
+        # data_sample = np.float32(data_sample)
+        # label = self.__label_to_class[self.labels[current_trial]]
+        #
+        # data_sample = np.swapaxes(data_sample, 0, 1)
 
         return data_sample, label
 
+
+if __name__ == '__main__':
+    path = '../datasets/SEED_EEG/Preprocessed_EEG'
+
+    dataset = SEEDDataset(path)
+
+    print(dataset.__len__())
+
+    [sample[1] for sample in tqdm.tqdm(dataset)]

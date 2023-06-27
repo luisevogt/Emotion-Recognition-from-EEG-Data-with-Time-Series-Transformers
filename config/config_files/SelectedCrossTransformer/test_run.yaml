@@ -1,31 +1,31 @@
 device: cuda
 seed: None
 evaluation: None
-train_epochs: 10
+train_epochs: 100
 classification_tag: a
 dataset_args:
-    split: [0.8, 0.1, 0.1]
-    data_dir: datasets/SEED_EEG/Preprocessed_EEG
+    split: [0.6, 0.2, 0.2]
+    data_dir: datasets/SEED_TEST
     data_tag: seed
-    sample_size: 6
+    sample_size: 1
 dataloader_args:
-    batch_size: 4
+    batch_size: 32
     num_workers: 0
 model_name: SelectedCrossTransformer
 save_every: 10
 model_args:
-    tag: SelectedCrossTransformer/test_seed
+    tag: SelectedCrossTransformer/seed_s1
     log: True
     data_dim: 62
     channel_grouping: seed
-    seg_length: 150
+    seg_length: 5
     win_size: 1
     factor: 4
     hidden_dim: 128
     ff_dim: 512
     num_heads: 4
     e_layers: 3
-    lr: 0.01
+    lr: 0.001
     lr_decay: 0.5
     momentum: 0.9
     weight_decay: 0.01

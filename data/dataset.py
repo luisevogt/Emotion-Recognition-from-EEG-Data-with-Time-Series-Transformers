@@ -282,34 +282,6 @@ class SEEDDataset(Dataset):
         labels = pickle.load(open(self.targets, 'rb'), encoding='latin1')
         data_sample = data[sample_idx]
         label = labels[idx]
-        # current_file = 0
-        # current_trial = 0
-        #
-        # while idx - current_file * self._samples_per_file >= self._samples_per_file:
-        #     current_file += 1
-        #
-        # file_idx = idx - current_file * self._samples_per_file
-        # sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
-        # while sample_idx >= 0:
-        #     current_trial += 1
-        #     sample_idx = file_idx - sum(self.samples_per_trail[:current_trial])
-        # if current_trial != 0:
-        #     current_trial -= 1
-        # sample_idx = self.samples_per_trail[current_trial] + sample_idx  # sample_idx is negative
-        #
-        # sample_idx = sample_idx * self.sample_size
-        #
-        # # load data
-        # file = scipy.io.loadmat(self.filenames[current_file])
-        # key = list(file.keys())[3][:-1]
-        # data = file[key + str(current_trial + 1)]
-        #
-        # # get sample and label
-        # data_sample = data[:, sample_idx:sample_idx + self.sample_size]
-        # data_sample = np.float32(data_sample)
-        # label = self.__label_to_class[self.labels[current_trial]]
-        #
-        # data_sample = np.swapaxes(data_sample, 0, 1)
 
         return data_sample, label
 

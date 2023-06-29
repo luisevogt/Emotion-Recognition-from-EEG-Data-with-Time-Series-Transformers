@@ -78,7 +78,8 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     if data_tag.lower() == 'deap':
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
         cwd = os.getcwd()
-        target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
+        # target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
+        target_path = os.path.join(dataset.data_dir, f'deap_targets_size_{sample_size}.pkl')
 
         # stratified split
         if not os.path.exists(target_path):

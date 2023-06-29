@@ -59,7 +59,7 @@ class DEAPDataset(Dataset):
 
         # save filenames in a list for fast access
         self.filenames = [filename for filename in os.listdir(self.data_dir)
-                          if os.path.isfile(os.path.join(self.data_dir, filename))]
+                          if os.path.isfile(os.path.join(self.data_dir, filename)) and 'targets' not in filename]
 
         # threshold
         self.__threshold = 4.5

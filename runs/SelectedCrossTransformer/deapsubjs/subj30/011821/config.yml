@@ -1,0 +1,74 @@
+classification_tag: a
+dataloader_args:
+  batch_size: 32
+  num_workers: 1
+dataset_args:
+  classification_tag: a
+  data_dir: /work3/luivog/DEAP/subj30
+  data_tag: deap
+  sample_size: 1
+  split:
+  - 0.6
+  - 0.2
+  - 0.2
+device: cuda
+evaluation: runs/SelectedCrossTransformer/deapsubjs/subj30/011821
+model_args:
+  channel_grouping:
+    0:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 23
+    1:
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 22
+    - 24
+    2:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    3:
+    - 15
+    - 25
+    - 26
+    - 27
+    - 28
+    - 29
+    - 30
+    - 31
+  classification_tag: a
+  data_dim: 32
+  dropout: 0.1
+  e_layers: 3
+  factor: 4
+  ff_dim: 512
+  hidden_dim: 128
+  in_length: 128
+  log: false
+  lr: 0.01
+  lr_decay: 0.5
+  momentum: 0.9
+  num_heads: 4
+  seg_length: 8
+  tag: SelectedCrossTransformer/deapsubjs/subj30
+  weight_decay: 0
+  win_size: 1
+model_name: SelectedCrossTransformer
+save_every: 100
+seed: None
+train_epochs: 15

@@ -284,7 +284,11 @@ class BaseModel(nn.Module):
         # log metrics to tensorboard if wanted
 
         y_pred_list = [pred.squeeze().tolist() for pred in y_pred_list]
-        y_labels = [label.item() for label in y_labels]
+        
+        #y_labels = [label.item() for label in y_labels]
+
+        y_pred_list = [item for sublist in y_pred_list for item in sublist]   ##Changed
+        y_labels = [item for sublist in y_labels for item in sublist]         ##Changed  
 
         y_pred = np.array(y_pred_list)
         y_labels = np.array(y_labels, dtype=np.float64)
@@ -328,7 +332,7 @@ class BaseModel(nn.Module):
 
         plt.figure(figsize=(12, 7))
         figure = sn.heatmap(df_cm, annot=True).get_figure()
-
+        figure.show()
         if log_step != -1:
             # self._writer.add_scalar("Test/accuracy", test_accuracy, log_step)
             # self._writer.add_scalar(f"Test/precision_{self.__class_names[0]}", precision_0, log_step)

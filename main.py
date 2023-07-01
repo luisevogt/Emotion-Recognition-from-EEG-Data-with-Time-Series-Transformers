@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     # get config dict
     config_path = args.config
+    config_path = '/home/s210382/Insai/DTU/Luise/Emotion-Recognition-from-EEG-Data-with-Time-Series-Transformers/config/config_files/SelectedCrossTransformer/test_run.yaml'
     if config_path:
         config_dict = config.get_args(config_path)
 
@@ -43,21 +44,21 @@ if __name__ == '__main__':
     dataloader_args = config_copy['dataloader_args']
 
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
-    # dataset = SEEDDataset(dataset_args['data_dir'], dataset_args['sample_size'])
-    # generator = torch.Generator().manual_seed(42)
-    # train, vali, test = random_split(dataset, dataset_args["split"], generator)
+    #dataset = SEEDDataset(dataset_args['data_dir'], dataset_args['sample_size'])
+    #generator = torch.Generator().manual_seed(42)
+    #train, vali, test = random_split(dataset, dataset_args["split"], generator)
 
     # dist = get_class_distribution(dataset)
     # plot_bar_chart(dist, (12, 7), x='class names', y='count', caption='Class Distribution in SEED',
     #                save_folder='plot/plots')
-
+    print('Here')
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
-    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
-    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
-
-    # train_loader = DataLoader(dataset=train, **dataloader_args, shuffle=True, pin_memory=True)
-    # vali_loader = DataLoader(dataset=vali, shuffle=True, batch_size=1, pin_memory=True)
-    # test_loader = DataLoader(dataset=test, shuffle=False, batch_size=1, pin_memory=True)
+    vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=16, pin_memory=True)
+    test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=16, pin_memory=True)
+    print('Done loading')
+    #train_loader = DataLoader(dataset=train, **dataloader_args, shuffle=True, pin_memory=True)
+    #vali_loader = DataLoader(dataset=vali, shuffle=True, batch_size=64, pin_memory=True)
+    #test_loader = DataLoader(dataset=test, shuffle=False, batch_size=64, pin_memory=True)
 
     # for t in train_loader:
     #     print(t[2])
@@ -105,8 +106,8 @@ if __name__ == '__main__':
     model.learn(train=train_loader, validate=vali_loader, test=test_loader, epochs=config_dict['train_epochs'],
                 save_every=config_dict['save_every'])
 
-    # model.eval()
-    # model.test(dataloader=test_loader)
+    model.eval()
+    model.test(dataloader=test_loader)
 
     config_dict['evaluation'] = model.log_path
     config_dict['model_args']['log'] = False

@@ -81,7 +81,7 @@ class SelectedCrossTransformer(BaseModel):
         self.classification = BinaryClassifier(hidden_dim=hidden_dim, channel_grouping=self.channel_grouping)
 
         # set loss function, optimizer and scheduler for learning rate decay
-        # self._loss_fn = nn.BCEWithLogitsLoss()
+        #self._loss_fn = nn.BCEWithLogitsLoss()
         self._loss_fn = nn.CrossEntropyLoss()
         self._optim = optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
         self._scheduler = None

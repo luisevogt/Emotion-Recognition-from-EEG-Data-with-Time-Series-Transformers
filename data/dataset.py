@@ -11,7 +11,7 @@ import scipy.io
 
 from torch.utils.data import Dataset
 import tqdm
-
+import mne
 
 class DEAPDataset(Dataset):
     """
@@ -208,7 +208,10 @@ class SEEDDataset(Dataset):
             key = list(file.keys())[3][:-1]
             for trail_idx in range(self._trail_num):
                 data = file[key + str(trail_idx + 1)]
-
+                # scale
+                #scaler = mne.decoding.Scaler(scalings='mean')
+                #data = scaler.fit_transform(data)
+                #data = scaler.fit_transform(data.T)[:,:,0].T
                 for sample_idx in range(self.samples_per_trail[trail_idx]):
                     # get sample and label
                     array_idx = sample_idx * self.sample_size
@@ -255,7 +258,7 @@ class SEEDDataset(Dataset):
                              3: 'right parietal-temporal-occipital',
                              4: 'center'}
 
-        channel_grouping = {0: [0, 3, 5, 6, 7, 8, 14, 15, 16, 17],
+        channel_grouping = {0: [0,3, 5, 6, 7, 8, 14, 15, 16, 17],
                             1: [2, 4, 10, 11, 12, 13, 19, 20, 21, 22],
                             2: [32, 33, 34, 35, 41, 42, 43, 44, 50, 51, 52, 57, 58],
                             3: [37, 38, 39, 40, 46, 47, 48, 49, 54, 55, 56, 60, 61],

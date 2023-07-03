@@ -48,13 +48,6 @@ def get_class_distribution_loaders(dataloader, dataset):
     return count_dict
 
 
-def write_targets(dataset, filepath):
-    targets = [sample[1] for sample in tqdm.tqdm(dataset)]
-
-    with open(filepath, 'wb') as file:
-        pickle.dump(targets, file)
-
-
 def read_targets(filepath):
     return pickle.load(open(filepath, 'rb'))
 
@@ -77,15 +70,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     # get dataset
     if data_tag.lower() == 'deap':
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
-        cwd = os.getcwd()
-        # target_path = os.path.join(cwd, 'datasets', 'DEAP', f'deap_targets_size_{sample_size}.pkl')
-        target_path = os.path.join(dataset.data_dir, f'deap_targets_size_{sample_size}.pkl')
 
         # stratified split
-        if not os.path.exists(target_path):
-            write_targets(dataset, target_path)
-
-        targets = read_targets(target_path)
+        targets = read_targets(dataset.targets)
 
         train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                                test_size=test_size,

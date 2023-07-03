@@ -1,5 +1,7 @@
 import os
 import pickle
+import time
+
 import numpy as np
 import torch
 
@@ -64,8 +66,51 @@ class DEAPDataset(Dataset):
         # threshold
         self.__threshold = 4.5
 
+        # write targets
+        self.get_targets()
+
     def get_class_names(self):
         return self.__class_names
+
+    def get_targets(self):
+        """Saves is list of targets."""
+        print("Get targets")
+        start_time = time.time()
+
+        target_path = os.path.join(self.data_dir, f'targets_deap_size_{self.sample_size // self.__sample_freq}.pkl')
+
+        # if targets are already there, update targets field
+        if os.path.exists(target_path) and len(os.listdir(target_path)) != 0:
+            self.targets = target_path
+            print("targets already exist.")
+            return
+
+        targets = []
+        for filename in self.filenames:
+            # load file
+            filepath = os.path.join(self.data_dir, filename)
+            file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+            labels = file["labels"]
+            for trail_idx in range(self._trail_num):
+                # get label
+                label = labels[trail_idx][self.__tag_to_idx[self._classification_tag]]
+
+                if label <= self.__threshold:
+                    label = 0
+                elif label > self.__threshold:
+                    label = 1
+
+                targets.append(label)
+
+        # save targets and update target field
+        with open(target_path, 'wb') as t_file:
+            pickle.dump(targets, t_file)
+
+        self.targets = target_path
+
+        end_time = time.time()
+        el_time = end_time - start_time
+        print(f'Wrote targets in {el_time}.')
 
     @staticmethod
     def get_channel_grouping():

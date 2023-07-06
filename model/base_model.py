@@ -104,7 +104,7 @@ class BaseModel(nn.Module):
         # set the model into training mode
         self.train()
         # TODO patience in config and function init
-        early_stopping = EarlyStopping(patience=7, verbose=True)
+        early_stopping = EarlyStopping(patience=5, verbose=True)
 
         # run for n epochs specified
         for e in tqdm(range(epochs)):

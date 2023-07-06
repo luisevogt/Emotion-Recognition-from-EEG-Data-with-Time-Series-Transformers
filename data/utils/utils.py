@@ -17,20 +17,19 @@ def get_class_distribution(dataset):
     :return: a dictionary that contains the count of all classes in the dataset.
     """
 
-    if isinstance(dataset, DEAPDataset):
-        # get class names
-        idx_to_class_names = dataset.get_class_names()
+    # get class names
+    idx_to_class_names = dataset.get_class_names()
 
-        # keep track of counts in a dict
-        count_dict = {v: 0 for v in idx_to_class_names.values()}
+    # keep track of counts in a dict
+    count_dict = {v: 0 for v in idx_to_class_names.values()}
 
-        # loop over dataset
-        for element in dataset:
-            label = element[1]
-            label = idx_to_class_names[label]
-            count_dict[label] += 1
+    # loop over dataset
+    for element in dataset:
+        label = element[1]
+        label = idx_to_class_names[label]
+        count_dict[label] += 1
 
-        return count_dict
+    return count_dict
 
 
 def get_class_distribution_loaders(dataloader, dataset):
@@ -79,6 +78,8 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
 
     # stratified split
     targets = read_targets(dataset.targets)
+    # from collections import Counter
+    # print(Counter(targets))
 
     train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                            test_size=test_size,

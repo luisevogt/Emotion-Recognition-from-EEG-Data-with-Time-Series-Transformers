@@ -5,10 +5,11 @@ from torch.utils.data import DataLoader
 
 from config.config import Config
 from data.dataset import DEAPDataset, NexusDataset
-from data.utils.utils import stratify_data, get_class_distribution_loaders
+from data.utils.utils import stratify_data, get_class_distribution
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from torchsummary import summary
 from model.base_model import BaseModel
+from plot.plot import plot_bar_chart
 
 config = Config()
 config_dict = None

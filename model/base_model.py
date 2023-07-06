@@ -11,7 +11,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sn
 
@@ -262,7 +262,10 @@ class BaseModel(nn.Module):
 
         report = classification_report(y_labels, y_pred,
                                        target_names=list(self.__class_names.values()),
-                                       output_dict=True)
+                                       output_dict=True,
+                                       labels=np.array([0, 1]))
+
+        accuracy = accuracy_score(y_labels, y_pred)
 
         precision_0 = report[self.__class_names[0]]['precision']
         precision_1 = report[self.__class_names[1]]['precision']
@@ -273,10 +276,8 @@ class BaseModel(nn.Module):
         f1_score_0 = report[self.__class_names[0]]['f1-score']
         f1_score_1 = report[self.__class_names[1]]['f1-score']
 
-        test_accuracy = report['accuracy']
-
         # get confusion matrix and log to tensorboard if wanted
-        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list))
+        cm = confusion_matrix(np.array(y_labels), np.array(y_pred_list), labels=np.array([0, 1]))
         df_cm = pd.DataFrame(cm / np.sum(cm, axis=1)[:, None],
                              index=[value for value in self.__class_names.values()],
                              columns=[value for value in self.__class_names.values()])
@@ -285,7 +286,7 @@ class BaseModel(nn.Module):
         figure = sn.heatmap(df_cm, annot=True).get_figure()
 
         if log_step != -1:
-            self._writer.add_scalar("Test/accuracy", test_accuracy, log_step)
+            self._writer.add_scalar("Test/accuracy", accuracy, log_step)
             self._writer.add_scalar(f"Test/precision_{self.__class_names[0]}", precision_0, log_step)
             self._writer.add_scalar(f"Test/precision_{self.__class_names[1]}", precision_1, log_step)
             self._writer.add_scalar(f"Test/recall_{self.__class_names[0]}", recall_0, log_step)

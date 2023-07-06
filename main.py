@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from config.config import Config
-from data.dataset import DEAPDataset
+from data.dataset import DEAPDataset, NexusDataset
 from data.utils.utils import stratify_data, get_class_distribution_loaders
 from model.SelectedCrossTransformer import SelectedCrossTransformer
 from torchsummary import summary
@@ -58,12 +58,16 @@ if __name__ == '__main__':
     elif model_args['channel_grouping'] == 'deap' and dataset_args['data_tag'] == 'deap':
         _, channel_grouping = DEAPDataset.get_channel_grouping()
         model_args['channel_grouping'] = channel_grouping
+        sample_freq = DEAPDataset.sample_freq
+    elif model_args['channel_grouping'] == 'nexus' and dataset_args['data_tag'] == 'nexus':
+        _, channel_grouping = NexusDataset.get_channel_grouping()
+        model_args['channel_grouping'] = channel_grouping
+        sample_freq = NexusDataset.sample_freq
 
     if model_args['lr_decay'] == 'None':
         model_args['lr_decay'] = None
 
     sample_size = config_copy['dataset_args']['sample_size']
-    sample_freq = DEAPDataset.sample_freq
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 

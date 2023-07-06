@@ -7,7 +7,7 @@ import tqdm
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data.dataset import DEAPDataset
+from data.dataset import DEAPDataset, DreamerDataset
 
 
 def get_class_distribution(dataset):
@@ -71,23 +71,28 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     if data_tag.lower() == 'deap':
         dataset = DEAPDataset(data_dir, classification_tag, sample_size)
 
-        # stratified split
-        targets = read_targets(dataset.targets)
-
-        train_idx, test_idx = train_test_split(np.arange(len(targets)),
-                                               test_size=test_size,
-                                               shuffle=True,
-                                               stratify=targets)
-
-        targets = [targets[i] for i in train_idx]
-
-        train_idx, vali_idx = train_test_split(train_idx,
-                                               test_size=vali_size / train_size,
-                                               shuffle=True,
-                                               stratify=targets)
+    elif data_tag.lower() == 'dreamer':
+        dataset = DreamerDataset(data_dir, classification_tag, sample_size)
 
     else:
         raise ValueError("Please provide valid dataset. Valid datasets are deap and dreamer.")
+
+    # stratified split
+    targets = read_targets(dataset.targets)
+    # from collections import Counter
+    # print(Counter(targets))
+
+    train_idx, test_idx = train_test_split(np.arange(len(targets)),
+                                           test_size=test_size,
+                                           shuffle=True,
+                                           stratify=targets)
+
+    targets = [targets[i] for i in train_idx]
+
+    train_idx, vali_idx = train_test_split(train_idx,
+                                           test_size=vali_size / train_size,
+                                           shuffle=True,
+                                           stratify=targets)
 
     train_sampler = SubsetRandomSampler(train_idx)
     vali_sampler = SubsetRandomSampler(vali_idx)

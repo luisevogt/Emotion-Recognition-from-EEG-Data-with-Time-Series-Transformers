@@ -215,7 +215,7 @@ class NexusDataset(Dataset):
         self.data_dir = data_dir
         self.__sample_freq = NexusDataset.sample_freq
         self.sample_size = sample_size * self.__sample_freq
-        self._trail_num = 18  # 18 videos per participant
+        self._trail_num = 16  # 16 videos per participant
         self._sample_num = 50 * self.__sample_freq // self.sample_size
         self._sample_per_part = self._trail_num * self._sample_num
 
@@ -240,7 +240,7 @@ class NexusDataset(Dataset):
         target_path = os.path.join(self.data_dir, f'targets_nexus_size_{self.sample_size // self.__sample_freq}.pkl')
 
         # if targets are already there, update targets field
-        if os.path.exists(target_path) and len(os.listdir(target_path)) != 0:
+        if os.path.exists(target_path):
             self.targets = target_path
             print("targets already exist.")
             return
@@ -248,9 +248,10 @@ class NexusDataset(Dataset):
         targets = []
         for filename in self.filenames:
             # load file
-            filepath = os.path.join(self.data_dir, filename)
-            file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+            file = pickle.load(open(filename, 'rb'), encoding='latin1')
             labels = file["labels"]
+            print(labels)
+            print(labels.shape)
             for trail_idx in range(self._trail_num):
                 # get label
                 label = labels[trail_idx][self.__tag_to_idx[self._classification_tag]]
@@ -312,8 +313,7 @@ class NexusDataset(Dataset):
         sample_idx = sample_idx * self.sample_size
 
         # load dataset
-        filepath = os.path.join(self.data_dir, self.filenames[current_participant])
-        file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        file = pickle.load(open(self.filenames[current_participant], 'rb'), encoding='latin1')
         data = file["data"]
         labels = file["labels"]
 

@@ -237,7 +237,7 @@ class NexusDataset(Dataset):
         print("Get targets")
         start_time = time.time()
 
-        target_path = os.path.join(self.data_dir, f'targets_nexus_size_{self.sample_size // self.__sample_freq}.pkl')
+        target_path = os.path.join(self.data_dir, f'targets_{self._classification_tag}_nexus_size_{self.sample_size // self.__sample_freq}.pkl')
 
         # if targets are already there, update targets field
         if os.path.exists(target_path):

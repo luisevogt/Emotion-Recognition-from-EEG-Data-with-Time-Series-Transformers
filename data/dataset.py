@@ -101,7 +101,7 @@ class DEAPDataset(Dataset):
                 elif label > self.__threshold:
                     label = 1
 
-                targets.append(label)
+                targets.extend([label] * self._sample_num)
 
         # save targets and update target field
         with open(target_path, 'wb') as t_file:
@@ -250,8 +250,6 @@ class NexusDataset(Dataset):
             # load file
             file = pickle.load(open(filename, 'rb'), encoding='latin1')
             labels = file["labels"]
-            print(labels)
-            print(labels.shape)
             for trail_idx in range(self._trail_num):
                 # get label
                 label = labels[trail_idx][self.__tag_to_idx[self._classification_tag]]
@@ -261,7 +259,7 @@ class NexusDataset(Dataset):
                 elif label > self.__threshold:
                     label = 1
 
-                targets.append(label)
+                targets.extend([label] * self._sample_num)
 
         # save targets and update target field
         with open(target_path, 'wb') as t_file:

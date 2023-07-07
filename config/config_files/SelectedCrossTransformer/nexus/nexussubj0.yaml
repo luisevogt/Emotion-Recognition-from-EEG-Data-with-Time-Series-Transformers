@@ -1,0 +1,32 @@
+device: cuda
+seed: None
+evaluation: None
+train_epochs: 25
+classification_tag: a
+dataset_args:
+    split: [0.6, 0.2, 0.2]
+    data_dir: /work3/luivog/Nexus/subj0
+    data_tag: nexus
+    sample_size: 1
+dataloader_args:
+    batch_size: 32
+    num_workers: 1
+model_name: SelectedCrossTransformer
+save_every: 100
+model_args:
+    tag: SelectedCrossTransformer/nexus/subj0
+    log: True
+    data_dim: 8
+    channel_grouping: nexus
+    seg_length: 5
+    win_size: 1
+    factor: 4
+    hidden_dim: 128
+    ff_dim: 512
+    num_heads: 4
+    e_layers: 3
+    lr: 0.01
+    lr_decay: 0.5
+    momentum: 0.9
+    weight_decay: 0
+    dropout: 0.1

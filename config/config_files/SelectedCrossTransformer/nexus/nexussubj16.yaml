@@ -1,11 +1,11 @@
 device: cuda
 seed: None
 evaluation: None
-train_epochs: 25
-classification_tag: a
+train_epochs: 20
+classification_tag: v
 dataset_args:
-    split: [0.6, 0.2, 0.2]
-    data_dir: /work3/luivog/Nexus/subj16
+    split: [0.8, 0.1, 0.1]
+    data_dir: datasets/Nexus/subj16
     data_tag: nexus
     sample_size: 1
 dataloader_args:

@@ -238,7 +238,7 @@ class DreamerDataset(Dataset):
         print("Get targets")
         start_time = time.time()
 
-        target_path = os.path.join(self.data_dir, f'targets_dreamer_size_{self.sample_size // self.__sample_freq}.pkl')
+        target_path = os.path.join(self.data_dir, f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
 
         # if targets are already there, update targets field
         if os.path.exists(target_path):
@@ -260,7 +260,7 @@ class DreamerDataset(Dataset):
                 elif label > self.__threshold:
                     label = 1
 
-                targets.append(label)
+                targets.extend([label] * self._sample_num)
 
         # save targets and update target field
         with open(target_path, 'wb') as t_file:

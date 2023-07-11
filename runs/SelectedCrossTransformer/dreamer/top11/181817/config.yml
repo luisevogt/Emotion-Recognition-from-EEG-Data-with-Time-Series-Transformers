@@ -1,0 +1,56 @@
+classification_tag: a
+dataloader_args:
+  batch_size: 32
+  num_workers: 1
+dataset_args:
+  classification_tag: a
+  data_dir: /work3/luivog/DREAMER/top11
+  data_tag: dreamer
+  sample_size: 1
+  split:
+  - 0.6
+  - 0.2
+  - 0.2
+device: cuda
+evaluation: runs/SelectedCrossTransformer/dreamer/top11/181817
+model_args:
+  channel_grouping:
+    0:
+    - 0
+    - 1
+    - 2
+    - 3
+    1:
+    - 10
+    - 11
+    - 12
+    - 13
+    2:
+    - 4
+    - 5
+    - 6
+    3:
+    - 7
+    - 8
+    - 9
+  classification_tag: a
+  data_dim: 14
+  dropout: 0.1
+  e_layers: 3
+  factor: 4
+  ff_dim: 512
+  hidden_dim: 128
+  in_length: 128
+  log: false
+  lr: 0.01
+  lr_decay: 0.5
+  momentum: 0.9
+  num_heads: 4
+  seg_length: 4
+  tag: SelectedCrossTransformer/dreamer/top11
+  weight_decay: 0
+  win_size: 1
+model_name: SelectedCrossTransformer
+save_every: 100
+seed: None
+train_epochs: 25

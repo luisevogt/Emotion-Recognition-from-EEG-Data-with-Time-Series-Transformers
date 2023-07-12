@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     dataloader_args = config_copy['dataloader_args']
 
-    dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
+    dataset, train_sampler, vali_sampler, test_sampler, weights = stratify_data(**dataset_args)
 
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 
-    model = available_models[model_name](**model_args)
+    model = available_models[model_name](**model_args, weights=weights)
     model.use_device(device)
 
     seed = config_copy['seed']

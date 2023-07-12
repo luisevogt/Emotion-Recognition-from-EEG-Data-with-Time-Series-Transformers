@@ -6,6 +6,7 @@ import numpy as np
 import tqdm
 from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
+from collections import Counter
 
 from data.dataset import DEAPDataset, DreamerDataset
 
@@ -79,8 +80,12 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
 
     # stratified split
     targets = read_targets(dataset.targets)
-    # from collections import Counter
-    # print(Counter(targets))
+
+    # calculate weights for weighted loss
+    # change it to be on train split for inverse number of samples 1/classcount
+    class_dist = Counter(targets)
+    print(class_dist)
+    weight_1 = torch.tensor(class_dist[0] / class_dist[1])
 
     train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                            test_size=test_size,
@@ -98,6 +103,6 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     vali_sampler = SubsetRandomSampler(vali_idx)
     test_sampler = SubsetRandomSampler(test_idx)
 
-    return dataset, train_sampler, vali_sampler, test_sampler
+    return dataset, train_sampler, vali_sampler, test_sampler, weight_1
 
 # TODO k-fold ?

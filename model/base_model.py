@@ -272,6 +272,7 @@ class BaseModel(nn.Module):
 
         f1_score_0 = report[self.__class_names[0]]['f1-score']
         f1_score_1 = report[self.__class_names[1]]['f1-score']
+        macro_f1_score = report['macro avg']['f1-score']
 
         test_accuracy = report['accuracy']
 
@@ -292,5 +293,6 @@ class BaseModel(nn.Module):
             self._writer.add_scalar(f"Test/recall_{self.__class_names[1]}", recall_1, log_step)
             self._writer.add_scalar(f"Test/f1-score_{self.__class_names[0]}", f1_score_0, log_step)
             self._writer.add_scalar(f"Test/f1-score_{self.__class_names[1]}", f1_score_1, log_step)
+            self._writer.add_scalar(f"Test/macro_f1-score", macro_f1_score, log_step)
 
             self._writer.add_figure("Confusion matrix", figure, log_step)

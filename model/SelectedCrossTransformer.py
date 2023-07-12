@@ -28,7 +28,7 @@ class SelectedCrossTransformer(BaseModel):
     def __init__(self, data_dim, in_length, classification_tag, channel_grouping=None, seg_length=10, win_size=2,
                  factor=10,
                  hidden_dim=512, ff_dim=1024, num_heads=4, e_layers=3, lr=1e-3, lr_decay=0.5, momentum=0.9,
-                 weight_decay=0, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True):
+                 weight_decay=0, dropout=0.1, device='cpu', tag='SelectedCrossTransformer', log=True, weights=None):
 
         if channel_grouping is None:
             self.channel_grouping = {0: [channel_idx for channel_idx in range(data_dim)]}
@@ -81,7 +81,10 @@ class SelectedCrossTransformer(BaseModel):
         self.classification = BinaryClassifier(hidden_dim=hidden_dim, channel_grouping=self.channel_grouping)
 
         # set loss function, optimizer and scheduler for learning rate decay
-        self._loss_fn = nn.BCEWithLogitsLoss()
+        if weights is not None:
+            self._loss_fn = nn.BCEWithLogitsLoss(pos_weight=weights)
+        else:
+            self._loss_fn = nn.BCEWithLogitsLoss()
         self._optim = optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
         self._scheduler = None
         if lr_decay:

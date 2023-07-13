@@ -71,7 +71,7 @@ if __name__ == '__main__':
     model_args['in_length'] = sample_size * sample_freq
     model_args['classification_tag'] = classification_tag
 
-    model = available_models[model_name](**model_args, weights=weights)
+    model = available_models[model_name](**model_args, weights=None)
     model.use_device(device)
 
     seed = config_copy['seed']

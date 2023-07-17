@@ -225,7 +225,7 @@ class DreamerDataset(Dataset):
         self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
 
         # threshold
-        self.__threshold = 3
+        self.__threshold = 2.5
 
         # write targets
         self.get_targets()

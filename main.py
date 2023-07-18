@@ -54,14 +54,17 @@ if __name__ == '__main__':
     model_args = config_copy['model_args']
 
     if model_args['channel_grouping'] == 'None':
-        model_args['channel_grouping'] = None
-    elif model_args['channel_grouping'] == 'deap' and dataset_args['data_tag'] == 'deap':
+        channel_grouping = None
+    elif model_args['channel_grouping'] == 'deap':
         _, channel_grouping = DEAPDataset.get_channel_grouping()
-        model_args['channel_grouping'] = channel_grouping
-        sample_freq = DEAPDataset.sample_freq
-    elif model_args['channel_grouping'] == 'dreamer' and dataset_args['data_tag'] == 'dreamer':
+    elif model_args['channel_grouping'] == 'dreamer':
         _, channel_grouping = DreamerDataset.get_channel_grouping()
-        model_args['channel_grouping'] = channel_grouping
+
+    model_args['channel_grouping'] = channel_grouping
+
+    if dataset_args['data_tag'] == 'deap':
+        sample_freq = DEAPDataset.sample_freq
+    elif dataset_args['data_tag'] == 'dreamer':
         sample_freq = DreamerDataset.sample_freq
 
     if model_args['lr_decay'] == 'None':

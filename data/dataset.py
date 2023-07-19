@@ -2,6 +2,7 @@ import glob
 import os
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -219,16 +220,16 @@ class DreamerDataset(Dataset):
         self.sample_size = sample_size * self.__sample_freq
         self._trail_num = 18  # 18 videos per participant
         self._sample_num = 50 * self.__sample_freq // self.sample_size
-        self._sample_per_part = self._trail_num * self._sample_num
+        # self._sample_per_part = self._trail_num * self._sample_num
 
         # save filename
         self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
 
         # threshold
-        self.__threshold = 3
+        self.__threshold = 2.5
 
         # write targets
-        self.get_targets()
+        self.filter_3()
 
     def get_class_names(self):
         return self.__class_names
@@ -272,6 +273,60 @@ class DreamerDataset(Dataset):
         el_time = end_time - start_time
         print(f'Wrote targets in {el_time}.')
 
+    def filter_3(self):
+        """filter 3 labels, save targets"""
+        print("Get targets and filter for 3")
+        start_time = time.time()
+
+        new_data_path = os.path.join(self.data_dir, f'no3_{self._classification_tag}')
+
+        Path(new_data_path).mkdir(parents=True, exist_ok=True)
+
+        targets = []
+        self.trails_per_subj = []
+        self._sample_per_part = []
+        for filename in self.filenames:
+            subj_data = []
+            subj_targets = []
+            trail_counter = 0
+            file = pickle.load(open(filename, 'rb'), encoding='latin1')
+            data = file["data"]
+            labels = file["labels"]
+            for trail_idx in range(self._trail_num):
+                label = labels[trail_idx][self.__tag_to_idx[self._classification_tag]]
+                trail = data[trail_idx, :, :]
+
+                if label != 3:
+                    subj_targets.append(label)
+                    if label <= self.__threshold:
+                        label = 0
+                    elif label > self.__threshold:
+                        label = 1
+                    targets.extend([label] * self._sample_num)
+                    subj_data.append(trail)
+                    trail_counter += 1
+
+            subj_data = np.stack(subj_data, axis=0)
+            subj_targets = np.array(subj_targets)
+            self.trails_per_subj.append(trail_counter)
+            self._sample_per_part.append(trail_counter * self._sample_num)
+            with open(os.path.join(new_data_path, os.path.basename(filename)), 'wb') as s_file:
+                pickle.dump({"data": subj_data, "labels": subj_targets}, s_file)
+
+        with open(os.path.join(new_data_path,
+                  f'targets_dreamer_size_{self.sample_size // self.__sample_freq}.pkl'), 'wb') as t_file:
+            pickle.dump(targets, t_file)
+
+        self.data_dir = new_data_path
+        self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
+        self.targets = os.path.join(self.data_dir,
+                                    f'targets_dreamer_size_{self.sample_size // self.__sample_freq}.pkl')
+
+        end_time = time.time()
+
+        el_time = end_time - start_time
+        print(f'filter 3 and wrote targets in {el_time}.')
+
     @staticmethod
     def get_channel_grouping():
         group_idx_to_name = {0: 'left frontal region',
@@ -286,9 +341,7 @@ class DreamerDataset(Dataset):
         return group_idx_to_name, channel_grouping
 
     def __len__(self):
-        participant_count = len(self.filenames)
-
-        return participant_count * self._sample_num * self._trail_num
+        return self._sample_num * sum(self.trails_per_subj)
 
     def __getitem__(self, idx):
         # flatten
@@ -298,15 +351,15 @@ class DreamerDataset(Dataset):
         # decompress index
         current_participant = 0
         current_trail = 0
-        while idx - current_participant * self._sample_per_part >= self._sample_per_part:
+        while idx - sum(self._sample_per_part[: current_participant + 1]) >= sum(self._sample_per_part[: current_participant + 1]):
             current_participant += 1
 
-        sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
+        sample_idx = idx - sum(self._sample_per_part[: current_participant + 1]) - current_trail * self._sample_num
         while sample_idx >= self._sample_num:
             current_trail += 1
-            if current_trail >= self._trail_num:
+            if current_trail >= self.trails_per_subj[current_participant]:
                 current_trail = 0
-            sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
+            sample_idx = idx - sum(self._sample_per_part[: current_participant + 1]) - current_trail * self._sample_num
 
         sample_idx = sample_idx * self.sample_size
 
@@ -318,9 +371,9 @@ class DreamerDataset(Dataset):
         # get sample and label
         data_sample = data[current_trail, :, sample_idx:sample_idx + self.sample_size]
         data_sample = np.float32(data_sample)
-        label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
+        label = labels[current_trail]
 
-        if label < self.__threshold:
+        if label <= self.__threshold:
             label = 0
         elif label > self.__threshold:
             label = 1

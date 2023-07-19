@@ -7,6 +7,8 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset
+from imblearn.over_sampling import ADASYN
+from collections import Counter
 
 
 class DEAPDataset(Dataset):
@@ -224,21 +226,85 @@ class DreamerDataset(Dataset):
         # save filename
         self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
 
+        self.length = len(self.filenames) * self._sample_num * self._trail_num
+
         # threshold
-        self.__threshold = 3
+        self.__threshold = 2.5
 
         # write targets
-        self.get_targets()
+        self.oversampling()
 
     def get_class_names(self):
         return self.__class_names
+
+    def oversampling(self):
+        print("Oversample ...")
+        start_time = time.time()
+
+        new_path = os.path.join(self.data_dir, f'oversampled_sample_size_{self.sample_size}_{self._classification_tag}')
+
+        if os.path.exists(new_path) and len(os.listdir(new_path)) != 0:
+            self.data_dir = new_path
+            self.filenames = glob.glob(os.path.join(self.data_dir, 'samples_dreamer_*.pkl'))
+            self.targets = os.path.join(new_path, 'targets_dreamer.pkl')
+
+            print("files already exist.")
+            return
+
+        samples = []
+        targets = []
+
+        for filepath in self.filenames:
+            file = pickle.load(open(filepath, 'rb'), encoding='latin1')
+            data = file["data"]
+            labels = file["labels"]
+            for trail_idx in range(self._trail_num):
+                label = labels[trail_idx][self.__tag_to_idx[self._classification_tag]]
+                if label <= self.__threshold:
+                    label = 0
+                elif label > self.__threshold:
+                    label = 1
+                for sample_idx in range(self._sample_num):
+                    array_idx = sample_idx * self.sample_size
+                    data_sample = data[trail_idx, :, array_idx:array_idx + self.sample_size]
+                    data_sample = np.float32(data_sample)
+                    samples.append(data_sample)
+                    samples.append(data_sample)
+                    targets.append(label)
+                    targets.append(label)
+
+            samples_res = np.stack(samples, axis=0)
+            targets_res = np.array(targets)
+
+            # ada = ADASYN()
+            # samples_res, targets_res = ada.fit_resample(samples, targets)
+            self.length = len(samples_res)
+            print(Counter(targets_res))
+
+            self.save_per_file = len(samples_res) // 8
+            for i in range(0, len(samples_res), self.save_per_file):
+                quarter = samples_res[i:i + self.save_per_file]
+                with open(os.path.join(new_path, f'{i}_samples_dreamer.pkl'), 'wb') as s_file:
+                    pickle.dump(quarter, s_file)
+            with open(os.path.join(new_path, 'targets_dreamer.pkl'), 'wb') as t_file:
+                pickle.dump(targets_res, t_file)
+
+            self.data_dir = new_path
+            self.filenames = glob.glob(os.path.join(self.data_dir, 'samples_dreamer_*.pkl'))
+            self.targets = os.path.join(new_path, 'targets_dreamer.pkl')
+
+            end_time = time.time()
+
+            el_time = end_time - start_time
+            print(f'Oversampled in {el_time}')
 
     def get_targets(self):
         """Saves is list of targets."""
         print("Get targets")
         start_time = time.time()
 
-        target_path = os.path.join(self.data_dir, f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
+        target_path = os.path.join(self.data_dir,
+                                   f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
 
         # if targets are already there, update targets field
         if os.path.exists(target_path):
@@ -286,9 +352,7 @@ class DreamerDataset(Dataset):
         return group_idx_to_name, channel_grouping
 
     def __len__(self):
-        participant_count = len(self.filenames)
-
-        return participant_count * self._sample_num * self._trail_num
+        return self.length
 
     def __getitem__(self, idx):
         # flatten
@@ -296,34 +360,18 @@ class DreamerDataset(Dataset):
             idx = idx.tolist()
 
         # decompress index
-        current_participant = 0
-        current_trail = 0
-        while idx - current_participant * self._sample_per_part >= self._sample_per_part:
-            current_participant += 1
-
-        sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
-        while sample_idx >= self._sample_num:
-            current_trail += 1
-            if current_trail >= self._trail_num:
-                current_trail = 0
-            sample_idx = idx - current_participant * self._sample_per_part - current_trail * self._sample_num
-
-        sample_idx = sample_idx * self.sample_size
+        file_idx = ((idx // self.save_per_file) + 1) * self.save_per_file
+        sample_idx = idx - (idx // self.save_per_file) * self.save_per_file
 
         # load dataset
-        file = pickle.load(open(self.filenames[current_participant], 'rb'), encoding='latin1')
-        data = file["data"]
-        labels = file["labels"]
-
-        # get sample and label
-        data_sample = data[current_trail, :, sample_idx:sample_idx + self.sample_size]
-        data_sample = np.float32(data_sample)
-        label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
-
-        if label < self.__threshold:
-            label = 0
-        elif label > self.__threshold:
-            label = 1
+        filepath = next((f for f in self.filenames if os.path.basename(f).startswith(str(file_idx))), None)
+        data = pickle.load(open(filepath, 'rb'), encoding='latin1')
+        labels = pickle.load(open(self.targets, 'rb'), encoding='latin1')
+        data_sample = data[sample_idx]
+        label = labels[idx]
 
         data_sample = np.swapaxes(data_sample, 0, 1)
+
         return data_sample, label
+
+

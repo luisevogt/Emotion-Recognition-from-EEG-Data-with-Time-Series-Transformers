@@ -1,4 +1,5 @@
 import argparse
+import glob
 import os
 import pickle
 from pathlib import Path
@@ -65,7 +66,7 @@ def split_dreamer(data_path, crop=50, std=True):
                   subject_data["ScoreDominance"][0, 0]]
         labels = np.concatenate((labels[0], labels[1], labels[2]), axis=1)
 
-        data_dict = {'data': data, 'labels':labels}
+        data_dict = {'data': data, 'labels': labels}
 
         # write file
         with open(os.path.join(data_path, path, f'subj{subj_idx}.pkl'), 'wb') as file:

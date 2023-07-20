@@ -371,12 +371,11 @@ class DreamerDataset(Dataset):
         labels = file["labels"]
 
         # get sample and label
-        if current_trail >= data.shape[0]:
-            print("idx: ", str(idx))
-            print("curr part: ", str(current_participant))
-            print("part indx: ", str(part_idx))
-            print("curr trail: ", str(current_trail))
-            print("sample idx: ", str(sample_idx))
+        print("idx: ", str(idx))
+        print("curr part: ", str(current_participant))
+        print("part indx: ", str(part_idx))
+        print("curr trail: ", str(current_trail))
+        print("sample idx: ", str(sample_idx))
         data_sample = data[current_trail, :, sample_idx:sample_idx + self.sample_size]
         data_sample = np.float32(data_sample)
         label = labels[current_trail]

@@ -223,7 +223,7 @@ class DreamerDataset(Dataset):
         # self._sample_per_part = self._trail_num * self._sample_num
 
         # save filename
-        self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
+        self.filenames = sorted(glob.glob(os.path.join(self.data_dir, 'subj*.pkl')))
 
         # threshold
         self.__threshold = 2.5
@@ -318,7 +318,7 @@ class DreamerDataset(Dataset):
             pickle.dump(targets, t_file)
 
         self.data_dir = new_data_path
-        self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
+        self.filenames = sorted(glob.glob(os.path.join(self.data_dir, 'subj*.pkl')))
         self.targets = os.path.join(self.data_dir,
                                     f'targets_dreamer_size_{self.sample_size // self.__sample_freq}.pkl')
 
@@ -373,6 +373,7 @@ class DreamerDataset(Dataset):
         # get sample and label
         print("idx: ", str(idx), flush=True)
         print("curr part: ", str(current_participant), flush=True)
+        print("samples per part: ", str(self._sample_per_part))
         print("part indx: ", str(part_idx), flush=True)
         print("curr trail: ", str(current_trail), flush=True)
         print("sample idx: ", str(sample_idx), flush=True)

@@ -351,15 +351,17 @@ class DreamerDataset(Dataset):
         # decompress index
         current_participant = 0
         current_trail = 0
-        while idx - sum(self._sample_per_part[: current_participant + 1]) >= sum(self._sample_per_part[: current_participant + 1]):
+        while sum(self._sample_per_part[:current_participant +1]) - idx <= 0:
             current_participant += 1
 
-        sample_idx = idx - sum(self._sample_per_part[: current_participant + 1]) - current_trail * self._sample_num
+        part_idx = idx - sum(self._sample_per_part[:current_participant])
+
+        sample_idx = part_idx - current_trail * self._sample_num
         while sample_idx >= self._sample_num:
             current_trail += 1
             if current_trail >= self.trails_per_subj[current_participant]:
                 current_trail = 0
-            sample_idx = idx - sum(self._sample_per_part[: current_participant + 1]) - current_trail * self._sample_num
+            sample_idx = idx - sum(self._sample_per_part[:current_participant]) - current_trail * self._sample_num
 
         sample_idx = sample_idx * self.sample_size
 

@@ -2,6 +2,7 @@ import glob
 import os
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -241,15 +242,9 @@ class DreamerDataset(Dataset):
         print("Oversample ...")
         start_time = time.time()
 
-        new_path = os.path.join(self.data_dir, f'oversampled_sample_size_{self.sample_size}_{self._classification_tag}')
+        new_path = os.path.join(self.data_dir, f'oversampled_sample_size_{self.sample_size // self.__sample_freq}_{self._classification_tag}')
 
-        if os.path.exists(new_path) and len(os.listdir(new_path)) != 0:
-            self.data_dir = new_path
-            self.filenames = glob.glob(os.path.join(self.data_dir, 'samples_dreamer_*.pkl'))
-            self.targets = os.path.join(new_path, 'targets_dreamer.pkl')
-
-            print("files already exist.")
-            return
+        Path(new_path).mkdir(parents=True, exist_ok=True)
 
         samples = []
         targets = []
@@ -269,34 +264,35 @@ class DreamerDataset(Dataset):
                     data_sample = data[trail_idx, :, array_idx:array_idx + self.sample_size]
                     data_sample = np.float32(data_sample)
                     samples.append(data_sample)
-                    samples.append(data_sample)
                     targets.append(label)
-                    targets.append(label)
+                    if label == 0:
+                        samples.append(data_sample)
+                        targets.append(label)
 
-            samples_res = np.stack(samples, axis=0)
-            targets_res = np.array(targets)
+        samples_res = np.stack(samples, axis=0)
+        targets_res = np.array(targets)
 
             # ada = ADASYN()
             # samples_res, targets_res = ada.fit_resample(samples, targets)
-            self.length = len(samples_res)
-            print(Counter(targets_res))
+        self.length = len(samples_res)
+        print(Counter(targets_res))
 
-            self.save_per_file = len(samples_res) // 8
-            for i in range(0, len(samples_res), self.save_per_file):
-                quarter = samples_res[i:i + self.save_per_file]
-                with open(os.path.join(new_path, f'{i}_samples_dreamer.pkl'), 'wb') as s_file:
-                    pickle.dump(quarter, s_file)
-            with open(os.path.join(new_path, 'targets_dreamer.pkl'), 'wb') as t_file:
-                pickle.dump(targets_res, t_file)
+        self.save_per_file = len(samples_res) // 8
+        for i in range(0, len(samples_res), self.save_per_file):
+            split = samples_res[i:i + self.save_per_file]
+            with open(os.path.join(new_path, f'{i}_samples_dreamer.pkl'), 'wb') as s_file:
+                pickle.dump(split, s_file)
+        with open(os.path.join(new_path, 'targets_dreamer.pkl'), 'wb') as t_file:
+            pickle.dump(targets_res, t_file)
 
-            self.data_dir = new_path
-            self.filenames = glob.glob(os.path.join(self.data_dir, 'samples_dreamer_*.pkl'))
-            self.targets = os.path.join(new_path, 'targets_dreamer.pkl')
+        self.data_dir = new_path
+        self.filenames = glob.glob(os.path.join(self.data_dir, '*_samples_dreamer.pkl'))
+        self.targets = os.path.join(new_path, 'targets_dreamer.pkl')
 
-            end_time = time.time()
+        end_time = time.time()
 
-            el_time = end_time - start_time
-            print(f'Oversampled in {el_time}')
+        el_time = end_time - start_time
+        print(f'Oversampled in {el_time}')
 
     def get_targets(self):
         """Saves is list of targets."""
@@ -360,7 +356,7 @@ class DreamerDataset(Dataset):
             idx = idx.tolist()
 
         # decompress index
-        file_idx = ((idx // self.save_per_file) + 1) * self.save_per_file
+        file_idx = ((idx // self.save_per_file)) * self.save_per_file
         sample_idx = idx - (idx // self.save_per_file) * self.save_per_file
 
         # load dataset

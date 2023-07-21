@@ -8,7 +8,6 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset
-from imblearn.over_sampling import ADASYN
 from collections import Counter
 
 
@@ -272,8 +271,6 @@ class DreamerDataset(Dataset):
         samples_res = np.stack(samples, axis=0)
         targets_res = np.array(targets)
 
-            # ada = ADASYN()
-            # samples_res, targets_res = ada.fit_resample(samples, targets)
         self.length = len(samples_res)
         print(Counter(targets_res))
 

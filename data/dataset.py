@@ -240,12 +240,6 @@ class DreamerDataset(Dataset):
 
         target_path = os.path.join(self.data_dir, f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
 
-        # if targets are already there, update targets field
-        if os.path.exists(target_path):
-            self.targets = target_path
-            print("targets already exist.")
-            return
-
         targets = []
         for filename in self.filenames:
             # load file

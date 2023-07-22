@@ -44,7 +44,7 @@ class SelectedCrossTransformer(BaseModel):
             self._writer = SummaryWriter(self._tb_path)
             print('Summary writer activated.')
         else:
-            self._writer = False
+            self._writer = None
 
         super(SelectedCrossTransformer, self).__init__(classification_tag=classification_tag)
 

@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 
 from utils.tools import EarlyStopping
+from ray.air import Checkpoint, session
 
 
 def eval_step(engine, batch):
@@ -43,16 +44,16 @@ class BaseModel(nn.Module):
                              "valence and dominance.")
 
         # enable tensorboard
-        if self._writer is None:
-            self.__tb_sub = datetime.now().strftime("%H%M%S")
-            self._tb_path = f"runs/{self.__tb_sub}"
-            self._writer = SummaryWriter(self._tb_path)
+        # if self._writer is not None:
+        #     self.__tb_sub = datetime.now().strftime("%H%M%S")
+        #     self._tb_path = f"runs/{self.__tb_sub}"
+        #     self._writer = SummaryWriter(self._tb_path)
         self.__sample_position = 0
 
         # check for gpu
         self._device = "cpu"
         if torch.cuda.is_available():
-            self._device_name = torch.cuda.get_device_name(0)
+            self._device_name = [torch.cuda.device(i) for i in range(torch.cuda.device_count())][0]
             print(f"GPU acceleration available on {self._device_name}")
 
         # to be defined by children
@@ -65,8 +66,10 @@ class BaseModel(nn.Module):
         return self._tb_path
 
     def use_device(self, device: str) -> None:
-        self._device = device
-        self.to(self._device)
+        if torch.cuda.is_available():
+            self._device = [torch.cuda.device(i) for i in range(torch.cuda.device_count())][0]
+            self.to(self._device)
+
 
     @staticmethod
     def save_to_default(model) -> None:
@@ -136,8 +139,9 @@ class BaseModel(nn.Module):
                 accuracies.append(accuracy.detach().cpu().item())
 
                 # log to tensorboard
-                self._writer.add_scalar("Train/loss", losses[-1], self.__sample_position)
-                self._writer.add_scalar("Train/accuracy", accuracies[-1], self.__sample_position)
+                if self._writer:
+                    self._writer.add_scalar("Train/loss", losses[-1], self.__sample_position)
+                    self._writer.add_scalar("Train/accuracy", accuracies[-1], self.__sample_position)
 
                 self.__sample_position += X.size(0)
 
@@ -145,21 +149,34 @@ class BaseModel(nn.Module):
             e_loss = np.mean(losses, axis=0)
             e_acc = np.mean(accuracies, axis=0)
 
-            self._writer.add_scalar("Train/mean_loss", e_loss, e + 1)
-            self._writer.add_scalar("Train/mean_accuracy", e_acc, e + 1)
+            if self._writer:
+                self._writer.add_scalar("Train/mean_loss", e_loss, e + 1)
+                self._writer.add_scalar("Train/mean_accuracy", e_acc, e + 1)
 
             # if there is an adaptive learning rate (scheduler) available
             if self._scheduler:
                 self._scheduler.step()
                 lr = self._scheduler.get_last_lr()[0]
-                self._writer.add_scalar("Train/learning_rate", lr, e)
+                if self._writer:
+                    self._writer.add_scalar("Train/learning_rate", lr, e)
 
             # run a validation of the current model state
             if validate:
                 # set the model to eval mode, run validation and set to train mode again
                 self.eval()
-                vali_loss = self.validate(validate, e + 1)
-                early_stopping(vali_loss)
+                vali_loss, vali_acc = self.validate(validate)
+                # early_stopping(vali_loss)
+                checkpoint_data = {
+                    "epoch": e,
+                    "net_state_dict": self.state_dict(),
+                    "optimizer_state_dict": self._optim.state_dict(),
+                }
+                checkpoint = Checkpoint.from_dict(checkpoint_data)
+
+                session.report(
+                    {"loss": vali_loss, "accuracy": vali_acc},
+                    checkpoint=checkpoint,
+                )
                 self.train()
 
             if test:
@@ -216,7 +233,7 @@ class BaseModel(nn.Module):
             self._writer.add_scalar("Validation/accuracy", accuracy, log_step)
             self._writer.add_scalar("Validation/loss", loss, log_step)
 
-        return loss
+        return loss, accuracy
 
     def test(self, dataloader, log_step: int = -1) -> None:
         """Method validates model's accuracy based on test data. During testing, the model
@@ -296,3 +313,5 @@ class BaseModel(nn.Module):
             self._writer.add_scalar(f"Test/macro_f1-score", macro_f1_score, log_step)
 
             self._writer.add_figure("Confusion matrix", figure, log_step)
+
+        return test_accuracy

@@ -33,7 +33,7 @@ def get_seg_lengths(s_size):
 
 hyperparam_config = {
     "sample_size": tune.choice([1, 5, 10]),
-    "seg_length": tune.sample_from(lambda spec: get_seg_lengths(spec.config.a)),
+    "seg_length": tune.sample_from(lambda spec: get_seg_lengths(spec.config.sample_size)),
     "factor": range(1, 5),
     "lr": tune.loguniform(1e-5, 1e-2),
 }

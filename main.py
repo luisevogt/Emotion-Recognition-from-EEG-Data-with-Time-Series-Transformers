@@ -1,5 +1,5 @@
 import argparse
-
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from functools import partial
@@ -24,17 +24,17 @@ num_samples = 100
 
 def get_seg_lengths(s_size):
     if s_size == 1:
-        return [2, 4, 8, 16]
+        return np.random.choice(np.array([2, 4, 8, 16]))
     elif s_size == 5:
-        return [2, 4, 8, 16, 32, 40, 64, 80]
+        return np.random.choice(np.array([2, 4, 8, 16, 32, 40, 64, 80]))
     elif s_size == 10:
-        return [2, 4, 8, 16, 32, 40, 64, 80, 128, 256]
+        return np.random.choice(np.array([2, 4, 8, 16, 32, 40, 64, 80, 128, 256]))
 
 
 hyperparam_config = {
     "sample_size": tune.choice([1, 5, 10]),
     "seg_length": tune.sample_from(lambda spec: get_seg_lengths(spec.config.sample_size)),
-    "factor": range(1, 5),
+    "factor": tune.choice(range(1, 5)),
     "lr": tune.loguniform(1e-5, 1e-2),
 }
 
@@ -42,7 +42,7 @@ hyperparam_config = {
 def main(hyper_param_config, config=None):
     # prepare data
     print("Load data...")
-    config_copy = config_dict.copy()
+    config_copy = config.copy()
     classification_tag = config_copy['classification_tag']
 
     dataset_args = config_copy['dataset_args']
@@ -50,6 +50,7 @@ def main(hyper_param_config, config=None):
 
     dataloader_args = config_copy['dataloader_args']
 
+    print(type(hyper_param_config["sample_size"]))
     dataset, train_sampler, vali_sampler, test_sampler, weights = stratify_data(
         sample_size=hyper_param_config["sample_size"], **dataset_args)
 
@@ -140,7 +141,7 @@ if __name__ == '__main__':
 
     result = tune.run(
         partial(main, config=config_dict),
-        resources_per_trial={"cpu": 2, "gpu": 1},
+        resources_per_trial={"cpu": 2},
         config=hyperparam_config,
         num_samples=num_samples,
         scheduler=scheduler,

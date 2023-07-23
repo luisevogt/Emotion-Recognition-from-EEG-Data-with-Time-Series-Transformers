@@ -50,7 +50,6 @@ def main(hyper_param_config, config=None):
 
     dataloader_args = config_copy['dataloader_args']
 
-    print(type(hyper_param_config["sample_size"]))
     dataset, train_sampler, vali_sampler, test_sampler, weights = stratify_data(
         sample_size=hyper_param_config["sample_size"], **dataset_args)
 

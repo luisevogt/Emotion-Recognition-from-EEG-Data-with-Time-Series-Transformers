@@ -58,7 +58,6 @@ class SelectedCrossTransformer(BaseModel):
         self._device = device
 
         # The padding operation to handle invisible segment length
-        print(seg_length)
         self.pad_in_len = ceil(1.0 * in_length / seg_length) * seg_length
         self.in_len_add = self.pad_in_len - self._in_len
 

@@ -26,9 +26,9 @@ def get_seg_lengths(s_size):
     if s_size == 1:
         return np.random.choice(np.array([2, 4, 8, 16]))
     elif s_size == 5:
-        return np.random.choice(np.array([2, 4, 8, 16, 32, 40, 64, 80]))
+        return np.random.choice(np.array([8, 16, 32, 40, 64, 80]))
     elif s_size == 10:
-        return np.random.choice(np.array([2, 4, 8, 16, 32, 40, 64, 80, 128, 256]))
+        return np.random.choice(np.array([16, 32, 40, 64, 80, 128, 256]))
 
 
 hyperparam_config = {
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     result = tune.run(
         partial(main, config=config_dict),
-        resources_per_trial={"cpu": 2},
+        resources_per_trial={"cpu": 2, "gpu": 1},
         config=hyperparam_config,
         num_samples=num_samples,
         scheduler=scheduler,

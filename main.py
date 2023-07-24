@@ -168,6 +168,7 @@ if __name__ == '__main__':
 
     model_args = config_dict.copy()['model_args']
 
+    _, channel_grouping = DreamerDataset.get_channel_grouping()
     if model_args['channel_grouping'] == 'None':
         channel_grouping = None
     elif model_args['channel_grouping'] == 'deap':

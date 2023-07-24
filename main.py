@@ -140,13 +140,14 @@ if __name__ == '__main__':
 
     result = tune.run(
         partial(main, config=config_dict),
-        resources_per_trial={"cpu": 2, "gpu": 1},
+        resources_per_trial={"cpu": 1},
         config=hyperparam_config,
         num_samples=num_samples,
         scheduler=scheduler,
     )
 
-    best_trial = result.get_best_trial("loss", "min", "last")
+    best_trial = result.get_best_trial("accuracy", "max", "all")
+    print(f"Best trial local path: {best_trial.local_path()}")
     print(f"Best trial config: {best_trial.config}")
     print(f"Best trial final validation loss: {best_trial.last_result['loss']}")
     print(f"Best trial final validation accuracy: {best_trial.last_result['accuracy']}")

@@ -225,7 +225,7 @@ class DreamerDataset(Dataset):
         self.filenames = glob.glob(os.path.join(self.data_dir, 'subj*.pkl'))
 
         # threshold
-        self.__threshold = 3
+        self.__threshold = 2.5
 
         # write targets
         self.get_targets()
@@ -314,7 +314,7 @@ class DreamerDataset(Dataset):
         data_sample = np.float32(data_sample)
         label = labels[current_trail][self.__tag_to_idx[self._classification_tag]]
 
-        if label < self.__threshold:
+        if label <= self.__threshold:
             label = 0
         elif label > self.__threshold:
             label = 1

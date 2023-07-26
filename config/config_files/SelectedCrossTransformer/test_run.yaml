@@ -5,7 +5,7 @@ train_epochs: 100
 classification_tag: a
 dataset_args:
     split: [0.6, 0.2, 0.2]
-    data_dir: datasets/SEED_TEST
+    data_dir: datasets/SEED_EEG/best4
     data_tag: seed
     sample_size: 1
 dataloader_args:

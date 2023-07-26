@@ -340,5 +340,5 @@ class BaseModel(nn.Module):
             # self._writer.add_scalar(f"Test/f1-score_{self.__class_names[0]}", f1_score_0, log_step)
             # self._writer.add_scalar(f"Test/f1-score_{self.__class_names[1]}", f1_score_1, log_step)
             self._writer.add_scalar(f"Test/macro_f1", macro_f1_score, log_step)
-	    self._writer.add_scalar(f"Test/accuracy", test_acc, log_step)
+            self._writer.add_scalar(f"Test/accuracy", test_acc, log_step)
             self._writer.add_figure("Confusion matrix", figure, log_step)

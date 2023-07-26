@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from data.dataset import DEAPDataset, SEEDDataset
+from collections import Counter
 
 
 def get_class_distribution(dataset):
@@ -90,6 +91,7 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     # stratified split
 
     targets = read_targets(dataset.targets)
+    print(Counter(targets))
 
     train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                            test_size=test_size,

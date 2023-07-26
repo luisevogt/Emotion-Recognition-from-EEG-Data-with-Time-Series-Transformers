@@ -62,7 +62,7 @@ def main(hyper_param_config, config=None):
 
     model_name = config_copy['model_name']
     model_args = config_copy['model_args']
-
+    _, channel_grouping = DreamerDataset.get_channel_grouping()
     if model_args['channel_grouping'] == 'None':
         channel_grouping = None
     elif model_args['channel_grouping'] == 'deap':
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     result = tune.run(
         partial(main, config=config_dict),
-        resources_per_trial={"cpu": 1},
+        resources_per_trial={"cpu": 2},
         config=hyperparam_config,
         num_samples=num_samples,
         scheduler=scheduler,

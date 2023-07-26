@@ -11,7 +11,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sn
 from torchmetrics.classification import MulticlassAccuracy
@@ -298,6 +298,8 @@ class BaseModel(nn.Module):
                                        target_names=list(self.__class_names.values()),
                                        labels=list(self.__class_names.keys()),
                                        output_dict=True)
+        macro_f1_score = report['macro avg']['f1-score']
+        test_acc = accuracy_score(y_labels, y_pred)
 
         for cls_idx, class_name in self.__class_names.items():
             precision = report[class_name]['precision']
@@ -337,5 +339,6 @@ class BaseModel(nn.Module):
             # self._writer.add_scalar(f"Test/recall_{self.__class_names[1]}", recall_1, log_step)
             # self._writer.add_scalar(f"Test/f1-score_{self.__class_names[0]}", f1_score_0, log_step)
             # self._writer.add_scalar(f"Test/f1-score_{self.__class_names[1]}", f1_score_1, log_step)
-
+            self._writer.add_scalar(f"Test/macro_f1", macro_f1_score, log_step)
+	    self._writer.add_scalar(f"Test/accuracy", test_acc, log_step)
             self._writer.add_figure("Confusion matrix", figure, log_step)

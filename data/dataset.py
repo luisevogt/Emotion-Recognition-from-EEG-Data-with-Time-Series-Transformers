@@ -238,18 +238,14 @@ class DreamerDataset(Dataset):
         print("Get targets")
         start_time = time.time()
 
-        target_path = os.path.join(self.data_dir, f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
+        target_path = os.path.join(self.data_dir,
+                                   f'targets_dreamer_{self._classification_tag}_size_{self.sample_size // self.__sample_freq}.pkl')
 
-        # if targets are already there, update targets field
-        if os.path.exists(target_path):
-            self.targets = target_path
-            print("targets already exist.")
-            return
-
-        targets = []
+        merged_list = []
         for filename in self.filenames:
             # load file
             file = pickle.load(open(filename, 'rb'), encoding='latin1')
+            subj = os.path.basename(filename).split('.')[0]
             labels = file["labels"]
             for trail_idx in range(self._trail_num):
                 # get label
@@ -260,11 +256,11 @@ class DreamerDataset(Dataset):
                 elif label > self.__threshold:
                     label = 1
 
-                targets.extend([label] * self._sample_num)
+                merged_list.extend([[label, subj]] * self._sample_num)
 
         # save targets and update target field
         with open(target_path, 'wb') as t_file:
-            pickle.dump(targets, t_file)
+            pickle.dump(merged_list, t_file)
 
         self.targets = target_path
 

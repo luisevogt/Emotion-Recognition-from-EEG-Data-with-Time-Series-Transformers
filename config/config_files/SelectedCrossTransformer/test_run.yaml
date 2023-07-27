@@ -5,9 +5,9 @@ train_epochs: 5
 classification_tag: a
 dataset_args:
     split: [0.6, 0.2, 0.2]
-    data_dir: datasets/DEAP/data_normalized_python
-    data_tag: deap
-    sample_size: 6
+    data_dir: datasets/DREAMER/subj_files_std
+    data_tag: dreamer
+    sample_size: 1
 dataloader_args:
     batch_size: 4
     num_workers: 1
@@ -17,8 +17,8 @@ model_args:
     tag: SelectedCrossTransformer/test_2
     log: True
     data_dim: 32
-    channel_grouping: deap
-    seg_length: 96
+    channel_grouping: dreamer
+    seg_length: 4
     win_size: 1
     factor: 4
     hidden_dim: 128

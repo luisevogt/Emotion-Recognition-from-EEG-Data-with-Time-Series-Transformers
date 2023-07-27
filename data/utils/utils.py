@@ -81,12 +81,6 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     # stratified split
     targets = read_targets(dataset.targets)
 
-    # calculate weights for weighted loss
-    # change it to be on train split for inverse number of samples 1/classcount
-    class_dist = Counter(targets)
-    print(class_dist)
-    weight_1 = torch.tensor(class_dist[0] / class_dist[1])
-
     train_idx, test_idx = train_test_split(np.arange(len(targets)),
                                            test_size=test_size,
                                            shuffle=True,
@@ -98,7 +92,6 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
                                            test_size=vali_size / train_size,
                                            shuffle=True,
                                            stratify=targets)
-
     train_sampler = SubsetRandomSampler(train_idx)
     vali_sampler = SubsetRandomSampler(vali_idx)
     test_sampler = SubsetRandomSampler(test_idx)

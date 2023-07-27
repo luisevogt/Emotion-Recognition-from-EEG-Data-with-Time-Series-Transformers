@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     dataloader_args = config_copy['dataloader_args']
 
-    dataset, train_sampler, vali_sampler, test_sampler, weights = stratify_data(**dataset_args)
+    dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
 
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)

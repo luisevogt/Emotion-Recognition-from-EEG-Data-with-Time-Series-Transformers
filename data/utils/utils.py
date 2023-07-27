@@ -96,6 +96,6 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
     vali_sampler = SubsetRandomSampler(vali_idx)
     test_sampler = SubsetRandomSampler(test_idx)
 
-    return dataset, train_sampler, vali_sampler, test_sampler, weight_1
+    return dataset, train_sampler, vali_sampler, test_sampler
 
 # TODO k-fold ?

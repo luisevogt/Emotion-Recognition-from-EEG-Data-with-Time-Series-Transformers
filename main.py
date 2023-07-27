@@ -43,24 +43,10 @@ if __name__ == '__main__':
     dataloader_args = config_copy['dataloader_args']
 
     dataset, train_sampler, vali_sampler, test_sampler = stratify_data(**dataset_args)
-    # dataset = SEEDDataset(dataset_args['data_dir'], dataset_args['sample_size'])
-    # generator = torch.Generator().manual_seed(42)
-    # train, vali, test = random_split(dataset, dataset_args["split"], generator)
-
-    # dist = get_class_distribution(dataset)
-    # plot_bar_chart(dist, (12, 7), x='class names', y='count', caption='Class Distribution in SEED',
-    #                save_folder='plot/plots')
 
     train_loader = DataLoader(dataset=dataset, **dataloader_args, sampler=train_sampler, pin_memory=True)
     vali_loader = DataLoader(dataset=dataset, sampler=vali_sampler, batch_size=1, pin_memory=True)
     test_loader = DataLoader(dataset=dataset, sampler=test_sampler, batch_size=1, pin_memory=True)
-
-    # train_loader = DataLoader(dataset=train, **dataloader_args, shuffle=True, pin_memory=True)
-    # vali_loader = DataLoader(dataset=vali, shuffle=True, batch_size=1, pin_memory=True)
-    # test_loader = DataLoader(dataset=test, shuffle=False, batch_size=1, pin_memory=True)
-
-    # for t in train_loader:
-    #     print(t[2])
 
     # get model
     device = config_copy['device']
@@ -69,15 +55,17 @@ if __name__ == '__main__':
     model_args = config_copy['model_args']
 
     if model_args['channel_grouping'] == 'None':
-        model_args['channel_grouping'] = None
-    elif model_args['channel_grouping'] == 'deap' and dataset_args['data_tag'] == 'deap':
+        channel_grouping = None
+    elif model_args['channel_grouping'] == 'deap':
         _, channel_grouping = DEAPDataset.get_channel_grouping()
-        model_args['channel_grouping'] = channel_grouping
-
-        sample_freq = DEAPDataset.sample_freq
-    elif model_args['channel_grouping'] == 'seed' and dataset_args['data_tag'] == 'seed':
+    elif model_args['channel_grouping'] == 'seed':
         _, channel_grouping = SEEDDataset.get_channel_grouping()
-        model_args['channel_grouping'] = channel_grouping
+
+    model_args['channel_grouping'] = channel_grouping
+
+    if dataset_args['data_tag'] == 'deap':
+        sample_freq = DEAPDataset.sample_freq
+    elif dataset_args['data_tag'] == 'seed':
         sample_freq = SEEDDataset.sample_freq
 
     if model_args['lr_decay'] == 'None':

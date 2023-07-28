@@ -1,0 +1,38 @@
+classification_tag: v
+dataloader_args:
+  batch_size: 32
+  num_workers: 1
+dataset_args:
+  classification_tag: v
+  data_dir: /work3/luivog/DREAMER/subj_files_std
+  data_tag: dreamer
+  sample_size: 1
+  split:
+  - 0.8
+  - 0.1
+  - 0.1
+device: cuda
+evaluation: runs/SelectedCrossTransformer/dreamer/valence/all/no_grouping_strat_subj/152007
+model_args:
+  channel_grouping: null
+  classification_tag: v
+  data_dim: 14
+  dropout: 0.1
+  e_layers: 3
+  factor: 4
+  ff_dim: 512
+  hidden_dim: 128
+  in_length: 128
+  log: false
+  lr: 0.01
+  lr_decay: 0.5
+  momentum: 0.9
+  num_heads: 4
+  seg_length: 4
+  tag: SelectedCrossTransformer/dreamer/valence/all/no_grouping_strat_subj
+  weight_decay: 0
+  win_size: 1
+model_name: SelectedCrossTransformer
+save_every: 100
+seed: None
+train_epochs: 20

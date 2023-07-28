@@ -247,7 +247,7 @@ class DreamerDataset(Dataset):
 
         samples = []
         targets = []
-
+        valence_counter = 0
         for filepath in self.filenames:
             file = pickle.load(open(filepath, 'rb'), encoding='latin1')
             data = file["data"]
@@ -265,8 +265,13 @@ class DreamerDataset(Dataset):
                     samples.append(data_sample)
                     targets.append(label)
                     if label == 0:
-                        samples.append(data_sample)
-                        targets.append(label)
+                        if self._classification_tag == 'v':
+                            if valence_counter % 4 == 0:
+                                samples.append(data_sample)
+                                targets.append(label)
+                        else:
+                            samples.append(data_sample)
+                            targets.append(label)
 
         samples_res = np.stack(samples, axis=0)
         targets_res = np.array(targets)

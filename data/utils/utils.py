@@ -92,9 +92,9 @@ def stratify_data(split: list, data_dir, data_tag, classification_tag, sample_si
                                            test_size=vali_size / train_size,
                                            shuffle=True,
                                            stratify=targets)
-    train_sampler = SubsetRandomSampler(train_idx[:100])
-    vali_sampler = SubsetRandomSampler(vali_idx[:50])
-    test_sampler = SubsetRandomSampler(test_idx[:50])
+    train_sampler = SubsetRandomSampler(train_idx)
+    vali_sampler = SubsetRandomSampler(vali_idx)
+    test_sampler = SubsetRandomSampler(test_idx)
 
     return dataset, train_sampler, vali_sampler, test_sampler
 

@@ -16,7 +16,7 @@ save_every: 10
 model_args:
     tag: SelectedCrossTransformer/test_2
     log: True
-    data_dim: 32
+    data_dim: 14
     channel_grouping: dreamer
     seg_length: 4
     win_size: 1

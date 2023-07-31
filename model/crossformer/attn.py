@@ -84,7 +84,8 @@ class TwoStageAttentionLayer(nn.Module):
         self.time_attention = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_sender = AttentionLayer(d_model, n_heads, dropout=dropout)
         self.dim_receiver = AttentionLayer(d_model, n_heads, dropout=dropout)
-        self.router = nn.Parameter(torch.randn(seg_num - 1, factor, d_model))
+        self.router = nn.ParameterList([nn.Parameter(torch.randn(seg_num - 1, factor, d_model))
+                                        for _ in channel_grouping.values()])
 
         self.dropout = nn.Dropout(dropout)
 
@@ -134,7 +135,8 @@ class TwoStageAttentionLayer(nn.Module):
                 dim_send = rearrange(dim_send, 'ts_d seg_num d_model -> seg_num ts_d d_model')
                 # batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model',
                 #                       repeat=batch)
-                dim_buffer = self.dim_sender(self.router, dim_send, dim_send)
+                router = self.router[group_idx]
+                dim_buffer = self.dim_sender(router, dim_send, dim_send)
                 dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
                 dim_enc = dim_send + self.dropout(dim_receive)
                 dim_enc = self.norm3(dim_enc)
